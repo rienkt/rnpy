@@ -29,6 +29,7 @@ from math import sqrt
 
 
 from rn.bin.active.core_nocsv import rn_loc, rn_fbreak
+import rn.rsf.fd as rn_fd
 
 from rn.rsf.utils import get_dim
 
@@ -214,12 +215,20 @@ class TimeDomainData:
 
     # setup srcs and rcvs
     if fsrc :
-      self.srcs = rsf_loc( fsrc )
+      if fsrc[-3:] == 'rsf' :
+        self.srcs = rsf_loc( fsrc )
+      else :
+        self.srcs = rn_fd.rn_loc()
+        self.srcs.read( fsrc )
     else :
       self.srcs = rn_loc( self.nsrc )
 
     if frcv :
-      self.rcvs = rsf_loc( fsrc )
+      if fsrc[-3:] == 'rsf' :
+        self.rcvs = rsf_loc( fsrc )
+      else :
+        self.rcvs = rn_fd.rn_loc()
+        self.rcvs.read( frcv )
     else :
       self.rcvs = rn_loc( self.nrcv )
 

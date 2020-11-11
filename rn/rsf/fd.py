@@ -3,6 +3,7 @@
 # Import RSF structure (like SEP.top)
 import rsf.api as rsf
 import os.path
+import os
 import numpy as np
 import rn.bin.active.core_nocsv as rn_bin
       
@@ -55,12 +56,11 @@ class rn_freq( rn_bin.rn_freq ) :
     n = int( lines[0]  )
     self.set_n( n )
     
-    self.d = np.array( [ line.split()[0] for line in lines[1:] ],
+    self.d = np.array( [ line.split()[0] for line in lines[1:n+1] ],
                         dtype=np.float )
     
 
 # define function     
-     
 class FreqdomainData:
   def __init__(self,ref=None, nsrc=1, nrcv=1, niter=1, nfreq=1 ) :
     self.rcvs = rn_loc()
@@ -86,13 +86,16 @@ class FreqdomainData:
     elif gather=='f':
       self.d = np.ones((self.srcs.n,  self.rcvs.n), 'c16') * init_value
     else:
-      self.d = np.ones((self.freqs.n, self.srcs.n, self.rcvs.n), 'c16') * init_value
+      self.d = np.ones( (self.freqs.n, self.srcs.n, self.rcvs.n), 'c16'
+                      ) * init_value
 
   def initialise(self, gather = 'all', init_value = 0.):
     self.initialize(gather,init_value)
 
+  def read_header(self, fre, fim,
+                fsrc='src.txt', frcv='rcv.txt',  ffreq='freq.txt')  :
+    # sfile='src.dat', rfile='rcv.dat', ffile='freq.dat'):
 
-  def read_header(self, fre, fim, sfile='src.dat', rfile='rcv.dat', ffile='freq.dat'):
     input_re = rsf.Input(fre)
     input_im = rsf.Input(fim)
     self.rcvs.n    = input_re.int('n1')
@@ -111,17 +114,22 @@ class FreqdomainData:
       self.freqs.d = 1.
       self.freqs.o = 1.
 
-    self.srcs.read( sfile )
-    self.rcvs.read( rfile )
-    self.freqs.read( ffile )
-
+   
+    if os.path.exists( fsrc ) :
+      self.srcs.read( fsrc )
+    if os.path.exists( frcv ) :
+      self.rcvs.read( frcv )
+    if os.path.exists( ffreq ) :
+      self.freqs.read( ffreq )
 
 
   def read( self, fre, fim, gather='all',
-            inum=1, sfile='src.dat', rfile='rcv.dat', ffile='freq.dat'):
+            fsrc='src.txt', frcv='rcv.txt',  ffreq='freq.txt',
+            inum=1 ) :
+            #sfile='src.dat', rfile='rcv.dat', ffile='freq.dat'):
     input_re=rsf.Input(fre)
     input_im=rsf.Input(fim)
-    self.read_header(fre,fim,sfile,rfile,ffile)
+    self.read_header(fre,fim,fsrc,frcv,ffreq)
 
     tmp_re=np.zeros((self.srcs.n,self.rcvs.n),'f')
     tmp_im=np.zeros((self.srcs.n,self.rcvs.n),'f')
@@ -170,19 +178,26 @@ class FreqdomainData:
     self.outputre.put('n3',self.freqs.n)
     self.outputre.put('d1',self.rcvs.d)
     self.outputre.put('d2',self.srcs.d)
-    self.outputre.put('d3',self.freqs.d)
+
+    if self.freqs.n > 1 : 
+      self.outputre.put('d3', ( self.freqs.d[1] - self.freqs.d[0] ))
+      self.outputim.put('d3', ( self.freqs.d[1] - self.freqs.d[0] ))
+    else :
+      self.outputre.put('d3', self.freqs.d[0] )
+      self.outputim.put('d3', self.freqs.d[0] )
+
     self.outputre.put('o1',self.rcvs.o)
     self.outputre.put('o2',self.srcs.o)
-    self.outputre.put('o3',self.freqs.o)
+    self.outputre.put('o3',self.freqs.d[0])
     self.outputim.put('n1',self.rcvs.n)
     self.outputim.put('n2',self.srcs.n)
-    self.outputim.put('n3',self.freqs.n)
+    #self.outputim.put('n3',self.freqs.n)
     self.outputim.put('d1',self.rcvs.d)
     self.outputim.put('d2',self.srcs.d)
     self.outputim.put('d3',self.freqs.d)
     self.outputim.put('o1',self.rcvs.o)
     self.outputim.put('o2',self.srcs.o)
-    self.outputim.put('o3',self.freqs.o)
+    self.outputim.put('o3', self.freqs.d[0])
   
   def write(self,fre,fim):
     self.write_header(fre,fim)
@@ -201,3 +216,4 @@ class FreqdomainData:
     self.outputre.close()
     self.outputim.close()
 
+FreqDomainData = FreqdomainData
