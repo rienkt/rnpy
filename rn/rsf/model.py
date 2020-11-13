@@ -104,3 +104,7 @@ class Model:
     return norm
      
 
+  def m2km( self ) :
+    self.d *= 1e-3
+    self.x *= 1e-3
+    self.z *= 1e-3

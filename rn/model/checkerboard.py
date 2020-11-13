@@ -10,11 +10,11 @@ def checkerboard( nx, nz, nx_checker, nz_checker ) :
   nchecker_x = nx / nx_checker / 2 
   nchecker_z = nz / nz_checker / 2
 
-  print nchecker_x, nchecker_z
+  print( nchecker_x, nchecker_z )
 
   if nchecker_x * 2 <  nx :
     nchecker_x += 1 
-    print nchecker_x
+    print(  nchecker_x )
     ix0 = ( nchecker_x *nx_checker * 2- nx ) / 2 
   else :
     ix0 = 0 
@@ -34,7 +34,7 @@ def checkerboard( nx, nz, nx_checker, nz_checker ) :
 
   e = np.column_stack( nchecker_z * ( c, d ))
   
-  print  ix0, iz0
+  print(  ix0, iz0 )
  
   return e[ix0:(ix0+nx), iz0:(iz0+nz)]
 
