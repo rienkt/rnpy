@@ -38,6 +38,9 @@ class rn_loc( rn_bin.rn_loc ) :
       print( '%s does not exist'%self.fname ) 
       self.x = np.arange( 0, self.n, dtype='f' )*self.d + self.o
       self.z = np.arange( 0, self.n, dtype='f' )*self.d + self.o
+  def m2km( self ):
+    self.x *= 1e-3
+    self.z *= 1e-3
 
     #if self.scale is not None : 
     #  self.x = self.x * self.scale
