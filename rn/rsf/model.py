@@ -72,7 +72,7 @@ class Model:
       flag = 1
 
     self.read_header( input=input ) 
-    print( self.dx )
+    #print( self.dx )
 
     self.initialize( 0.0 )
     input.read(self.d)
