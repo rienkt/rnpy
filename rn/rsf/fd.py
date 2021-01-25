@@ -120,10 +120,16 @@ class FreqdomainData:
    
     if os.path.exists( fsrc ) :
       self.srcs.read( fsrc )
+    else :
+      self.srcs.d = np.arange( self.srcs.n )
     if os.path.exists( frcv ) :
       self.rcvs.read( frcv )
+    else :
+      self.rcvs.d = np.arange( self.rcvs.n )
     if os.path.exists( ffreq ) :
       self.freqs.read( ffreq )
+    else :
+      self.freqs.d = np.arange( self.freqs.n )
 
 
   def read( self, fre, fim, gather='all',
