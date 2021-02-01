@@ -43,7 +43,7 @@ def set_t( ot, dt, nt ) :
 
 
 
-# define class
+# set loc class by reading rsf file
 
 def rsf_loc( floc ) :
   input = rsf.Input( floc )
@@ -354,4 +354,158 @@ class TimeDomainWavefield:
     output.write(np.float32(self.d))    
 
 
+#--------------------------------------------------------------------------
+# MCTimeDomainDataMod - Multi-component time-domain d after fdfd modelling
+#                       : source - time - component - receiver 
+#--------------------------------------------------------------------------
+class MCTimeDomainDataMod:
+  def __init__(self, ref=None, nrcv=1,  nc=1,  nt=1,  nsrc=1,
+                     drcv=1., dc=1., dt=1., dsrc=1.,
+                     orcv=0., oc=0., ot=0., osrc=0.):
+    # needs to clean up here. 
+    if ref :
+      self.d = copy.copy( self.d )
+    else : 
+      self.nrcv=nrcv; self.nc=nc; self.nt=nt;self.nsrc=nsrc;  
+      self.orcv=orcv; self.oc=oc; self.ot=ot;self.osrc=osrc;  
+      self.drcv=drcv; self.dc=dc; self.dt=dt;self.dsrc=dsrc;  
+      self.d=np.zeros((self.nsrc,self.nt,self.nc,self.nrcv),'f')
 
+  #def get_header(self,input, fsrc=None, frcv=None ):
+  def read_header( self, input=None, f=None, fsrc=None, frcv=None ):
+    if input is None :
+      input = rsf.Input( f )
+    self.nrcv=input.int('n1')
+    self.nc=input.int('n2')
+    self.nt  =input.int('n3')
+    self.nsrc=input.int('n4')
+    self.drcv=input.float('d1')
+    self.dc=input.float('d2')
+    self.dt=input.float('d3')
+    self.dsrc=input.float('d4')
+    self.orcv=input.float('o1')
+    self.oc=input.float('o2')
+    self.ot=input.float('o3')
+    self.osrc=input.float('o4')
+    self.set_t()
+    # setup srcs and rcvs
+    if fsrc :
+      self.srcs = rsf_loc( fsrc )
+    else :
+      self.srcs = rn_loc( self.nsrc )
+
+    if frcv :
+      self.rcvs = rsf_loc( fsrc )
+    else :
+      self.rcvs = rn_loc( self.nrcv )
+
+
+  def set_t( self ) :
+    self.t = self.ot + np.arange( self.nt, dtype=np.float ) * self.dt
+  
+  def write_header(self,output):
+    output.put('n1',self.nrcv)
+    output.put('n2',self.nc)
+    output.put('n3',self.nt)
+    output.put('n4',self.nsrc)
+    output.put('d1',self.drcv)
+    output.put('d2',self.dc)
+    output.put('d3',self.dt)
+    output.put('d4',self.dsrc)
+    output.put('o1',self.orcv)
+    output.put('o2',self.oc)
+    output.put('o3',self.ot)
+    output.put('o4',self.osrc)
+  def read_rsf( self, input=None, f=None):
+    self.read( input=input, f=f )
+
+  def read( self, input=None, f=None):
+    if input is None :
+      input = rsf.Input( f )
+    self.read_header( input=input )
+
+    print( self.nsrc, self.nt, self.nc, self.nrcv )
+
+    self.d = np.zeros( (self.nsrc, self.nt, self.nc, self.nrcv ),'f')
+    input.read(self.d)
+  def write_rsf( self, output=None, f=None ):
+    if output is None :
+      output = rsf.Output( f )
+    self.write_header(output)
+    output.write(np.float32(self.d))
+    output.close()
+  def zero_lag_corr(self,in2):
+    zero_lag_corr = np.dot( self.d.reshape(self.nc,self.nrcv*self.nsrc*self.nt,1).T,   
+                            in2.d.reshape(in2.nrcv*in2.nsrc*in2.nt,1))
+    return zero_lag_corr
+
+
+#--------------------------------------------------------------------------
+# First break  # hahaha? 
+#--------------------------------------------------------------------------
+class Fbreak:
+  def __init__( self, ref=None, nsrc=1, osrc=0., dsrc=1.,
+                                nrcv=1, orcv=0., drcv=1. )  :
+    if ref :
+      self.nsrc = ref.nsrc
+      self.nrcv = ref.nrcv
+      self.osrc = ref.osrc
+      self.orcv = ref.orcv
+      self.dsrc = ref.dsrc
+      self.drcv = ref.drcv
+    else :
+      self.nsrc = nsrc
+      self.nrcv = nrcv
+      self.osrc = osrc
+      self.orcv = orcv
+      self.dsrc = dsrc
+      self.drcv = drcv
+    self.initialize()
+  def initialize( self, val=0. ) :
+    self.d = val * np.ones((self.nsrc, self.nrcv),'f')
+
+  def read_header(self, input=None, f=None ):
+    if input is None :
+      input = rsf.Input( f )
+    self.nrcv = input.int('n1')
+    self.nsrc = input.int('n2')
+    self.drcv = input.float('d1')
+    self.dsrc = input.float('d2')
+    self.orcv = input.float('o1')
+    self.osrc = input.float('o2')
+
+
+  def write_header(self,output):
+    output.put('n1',self.nrcv)
+    output.put('n2',self.nsrc)
+    output.put('d1',self.drcv)
+    output.put('d2',self.dsrc)
+    output.put('o1',self.orcv)
+    output.put('o2',self.osrc)
+
+  def read_rsf( self, input=None, f=None ) :
+
+    self.read( input=input, f=f )
+
+  def read(self, input=None, f=None):
+    if input is None :
+      input = rsf.Input( f )
+    self.read_header(input)
+    self.d=np.zeros((self.nsrc,self.nrcv),'f')
+    input.read(self.d)
+
+    self.d = np.ma.masked_equal( self.d, 0. )
+    if type( self.d.mask ) is not np.ndarray :
+      if self.d.mask is False :
+        self.d.mask = np.zeros( 0, dtype=np.bool )
+      else :
+        self.d.mask = np.zeros( 1, dtype=np.bool )
+      
+
+
+  def write(self,output=None, f=None):
+    if output is None :
+      output = rsf.Output( f )
+    self.write_header(output)
+    output.write(np.float32(self.d))
+    output.close()

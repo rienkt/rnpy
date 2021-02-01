@@ -58,8 +58,14 @@ class Model:
       self.nz = ref.nz
       self.oz = ref.oz
       self.dz = ref.dz
-      self.fdir = ref.fdir
-      self.fheader = ref.fheader
+      try :
+        self.fdir = ref.fdir
+      except :
+        print( 'fdir is not defined' )
+      try :
+        self.fheader = ref.fheader
+      except :
+        print( 'fheader is not defined' )
     else :
 
       self.nx = nx
