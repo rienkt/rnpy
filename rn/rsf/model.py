@@ -41,6 +41,7 @@ class Model:
       self.oz = oz
       self.dz = dz
     self.initialize( init_value )
+    self.set_axis()
 
   def initialize( self, init_value=0.0 ):
     self.d = np.ones( ( self.nx, self.nz ), np.float32 
@@ -59,6 +60,7 @@ class Model:
     self.dx = input.float( 'd2' )
     self.oz = input.float( 'o1' )
     self.ox = input.float( 'o2' )
+    self.set_axis()
  
 
   def read( self, input=None, f=None ):
