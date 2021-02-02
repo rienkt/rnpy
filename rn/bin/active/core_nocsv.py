@@ -71,7 +71,7 @@ class rn_loc( object ) : #{{{{{
     else :
       self.z = np.arange( self.n, dtype=np.float ) * dz + oz
 
-  def initialize( self, val=0. )
+  def initialize( self, val=0. ) :
     self.x = np.ones( self.n, dtype=np.float ) * val
     self.y = np.ones( self.n, dtype=np.float ) * val
     self.z = np.ones( self.n, dtype=np.float ) * val

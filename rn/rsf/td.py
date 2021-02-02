@@ -152,9 +152,14 @@ class TimeDomainDataMod:
     input.close()
 
   def write_rsf(self,output=None, f=None):
+    self.write( output=output, f=f )
+  def write( self, output=None, f=None):
+    print('hehe')
     if output is None :
       output = rsf.Output( f )
+    print('hehe 2')
     self.write_header(output)
+    print('hehe 3')
     output.write(np.float32(self.d))
     output.close()
   def zero_lag_corr( self, in2 ):
