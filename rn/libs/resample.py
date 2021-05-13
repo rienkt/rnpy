@@ -31,7 +31,7 @@ import rn.libs.fourier as rn_f
 
 def resample1d_sp( din, dxin, dxout ) :
   nout = int( float( din.shape[-1] ) * dxin / dxout )
-  print nout, din.shape
+  print( nout, din.shape )
   return sp_signal.resample( din, nout, axis=-1 ), nout
 
 def resample1d_fft( din, dxin, dxout ) :
@@ -43,7 +43,7 @@ def resample1d_fft( din, dxin, dxout ) :
 #  elif dxin < dxout :
 #    fd = np.delete( fd, np_s[ nout:], axis=-1)
 #    
-  print nout, din.shape, fd.shape
+  print( nout, din.shape, fd.shape )
   return np.fft.irfft( fd ), nout
 
 def resample2d_sp( din, d1in, d2in, d1out, d2out ) :

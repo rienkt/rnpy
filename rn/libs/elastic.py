@@ -42,4 +42,5 @@ def vp2den_gardner( vp, vp_unit='m/s' ) :
     den = 0.31 * ( 1000.0 * vp ) **0.25
   else :
     den = 0.31 * ( vp ) **0.25
+  return den
 

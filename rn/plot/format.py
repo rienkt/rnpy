@@ -225,6 +225,7 @@ class AxesFormat :
     self.subtitle_valign='center'
     self.subtitle_alpha=0.5
     self.subtitle_fontsize = None
+    self.subtitle_fontweight = 'bold'
     
     self.subtitle2 = None
     self.subtitle2_position = [ -0.1, 0.5 ]
@@ -232,6 +233,7 @@ class AxesFormat :
     self.subtitle2_halign='center'
     self.subtitle2_valign='center'
     self.subtitle2_alpha=0.5
+    self.subtitle2_fontweight = 'bold'
 
 
   
@@ -344,7 +346,7 @@ class AxesFormat :
       print( self.subtitle_fontsize )
 
       self.ax_subtitle = ax.text( -0.1, 0.5, self.subtitle, 
-          fontsize=self.subtitle_fontsize, fontweight='bold',
+          fontsize=self.subtitle_fontsize, fontweight=self.subtitle_fontweight,
                bbox=dict(facecolor='w', alpha=self.subtitle_alpha, linewidth=0),
                horizontalalignment=self.subtitle_halign, 
                verticalalignment=self.subtitle_valign,

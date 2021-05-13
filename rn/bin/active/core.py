@@ -89,6 +89,7 @@ class rn_loc( object ) : #{{{{{
     self.lon = np.zeros( self.n, dtype=np.float )
     self.id = [] #np.arange( self.n, dtype=np.int )
     self.time = []
+    self.dist = None
     for i in range( self.n ) :
       self.id.append( 'id-%d'%i )
       self.time.append( datetime.datetime( 1900, 1, 1, tzinfo = tz_jp ) )
@@ -110,7 +111,7 @@ class rn_loc( object ) : #{{{{{
 
     self.db = pd.read_csv( os.path.join( self.fdir, self.fname ) )
     #print( self.db.id )
-    self.n = len( self.db )
+    #print( self.db )
     self.n = len( self.db )
 
     self.id = self.db['id'].to_numpy()
@@ -129,11 +130,25 @@ class rn_loc( object ) : #{{{{{
 #    except :
 #      self.time = None #[ datetime.datetime( 1900, 1, 1, tzinfo = tz_jp) for line in lines ]
 #
+  def db2value( self ) :
+    self.id = self.db['id'].to_numpy()
+    self.x  = self.db['x'].to_numpy()
+    self.y  = self.db['y'].to_numpy()
+    self.z = self.db['z'].to_numpy()
+    self.lat = self.db['lat'].to_numpy()
+    self.lon = self.db['lon'].to_numpy()
+    self.time = self.db.time.to_numpy()
+    self.dist = self.db['dist'].to_numpy()
+
   def write( self ) :
     self.db = pd.DataFrame(
         OrderedDict( {'x': self.x, 'y': self.y, 'z': self.z, 
                       'lat': self.lat, 'lon': self.lon,
                       'id': self.id, 'time': self.time } ) )
+    if self.dist is not None :
+      self.db['dist'] = self.dist
+    #print( 'i am writing' )
+    #print( self.db )
     self.db.to_csv( os.path.join( self.fdir, self.fname ) )
 
   def latlon2utm( self, lat='x' ) :
@@ -245,7 +260,7 @@ class rn_fbreak( object ) : #{{{{{
 
     self.db = pd.read_csv( os.path.join( self.fdir, self.fname ) )
 
-    print ( self.db )
+    #print ( self.db )
     if nsrc == 0 :
       if srcs :
         nsrc = srcs.n
@@ -257,7 +272,7 @@ class rn_fbreak( object ) : #{{{{{
       else :
         nrcv = len( self.db.ircv.unique() )
 
-    print( nsrc, nrcv )
+    #print( nsrc, nrcv )
 
     try :
       self.isrc = self.db.isrc.to_numpy().reshape( nsrc, nrcv )
@@ -440,6 +455,22 @@ class binary( ) :
     self.offsets = rn_loc( noffset )
     #}}}}}
   
+  def set_offset2d( self, sign=0 ) : #{{{{{
+
+    if self.isrcs.ndim > 1 :
+      rrx, ssx = np.meshgrid( self.rcvs.x, self.srcs.x ) 
+      rry, ssy = np.meshgrid( self.rcvs.y, self.srcs.y ) 
+    else :
+      rrx = self.rcvs.x[ self.ircvs ]
+      rry = self.rcvs.y[ self.ircvs ]
+      ssx = self.srcs.x[ self.isrcs ]
+      ssy = self.srcs.y[ self.isrcs ]
+
+    self.offset2d = np.sqrt( ( rry-ssy ) **2 +( rrx-ssx ) **2  ) 
+    if sign == 1 :
+      self.offset2d *= np.sign( rrx-ssx )
+
+    #}}}}}
   def set_offset( self ) : #{{{{{
 
     if self.isrcs.ndim > 1 :
@@ -696,27 +727,26 @@ class rn_binary(binary) :
       self.fbreak.write( self.srcs, self.rcvs )
   #}}}}}
 
-  def read_data( self, idx=None, z=None  ) : #{{{{{
+  def read_data( self, idx=None, z=None, dtype=np.float32  ) : #{{{{{
     if self.gather == 'shot' :
-      self.read_data_shot( ishot=idx ) 
+      self.read_data_shot( ishot=idx, dtype=dtype ) 
     elif self.gather == 'receiver' :
-      self.read_data_receiver( ircv=idx )
+      self.read_data_receiver( ircv=idx, dtype=dtype )
     elif self.gather == 'cmp' :
-      self.read_data_cmp( icmp=idx ) 
+      self.read_data_cmp( icmp=idx, dtype=dtype ) 
     elif self.gather == 'offset' :
-      self.read_data_offset( ioffset=idx )
+      self.read_data_offset( ioffset=idx, dtype=dtype )
 
     elif self.gather == 'samelevel' :
       self.read_data_samelevel()
     else :
       self.data = np.fromfile( os.path.join( self.fdir, self.fbin ), 
-              dtype = np.dtype('float32') 
-             ).reshape(self.srcs.n, self.rcvs.n, self.nt)
+              dtype = dtype ).reshape(self.srcs.n, self.rcvs.n, self.nt)
   #}}}}}
 
 
   
-  def read_data_shot( self, ishot ) : # ishot start from zero #{{{{{
+  def read_data_shot( self, ishot, dtype=np.float32 ) : # ishot start from zero #{{{{{
 
     if not self.fbinh :
       self.open_data( op='r' )
@@ -729,30 +759,33 @@ class rn_binary(binary) :
       print( 'no fbreak data available' )
       self.fbreak.time = np.zeros( self.rcvs.n, dtype=np.float )
 
+    ibyte  = np.dtype( np.float32 ).itemsize
 
-    self.fbinh.seek( 4 * ishot * self.nt * self.rcvs.n, os.SEEK_SET ) 
-    self.data[ :, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+    self.data = np.zeros( ( self.rcvs.n, self.nt ), dtype=dtype  )
+
+    self.fbinh.seek( ibyte * ishot * self.nt * self.rcvs.n, os.SEEK_SET ) 
+    self.data[ :, : ] = np.fromfile( self.fbinh, dtype = dtype, 
                              count= self.nt * self.rcvs.n 
                             ).reshape( self.rcvs.n, self.nt )
     #}}}}} 
 
-  def read_data_receiver( self, ircv ) : # ircv starts from 0 #{{{{{
+  def read_data_receiver( self, ircv, dtype=np.float32) : # ircv starts from 0 #{{{{{
     print( 'receiver gather ')
     if not self.fbinh :
       self.open_data( op='r' )
-
+    ibyte  = np.dtype( dtype ).itemsize
     if self.sort == 'receiver' :
-      self.fbinh.seek( 4 * ircv * self.nt * self.srcs.n, os.SEEK_SET ) 
-      self.data[ :, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+      self.fbinh.seek( ibyte * ircv * self.nt * self.srcs.n, os.SEEK_SET ) 
+      self.data[ :, : ] = np.fromfile( self.fbinh, dtype = dtype,  
                                count= self.nt * self.srcs.n 
                               ).reshape( self.srcs.n, self.nt )
     else :
-      self.fbinh.seek( 4 * ircv * self.nt, os.SEEK_SET )
+      self.fbinh.seek( ibyte * ircv * self.nt, os.SEEK_SET )
       for isrc in range( self.srcs.n ) :
-        self.data[ isrc, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+        self.data[ isrc, : ] = np.fromfile( self.fbinh, dtype = dtype,
                                count= self.nt )
         #print isrc, self.fbinh.tell()
-        self.fbinh.seek( 4 * ( self.rcvs.n -1 ) * self.nt, os.SEEK_CUR )
+        self.fbinh.seek( ibyte * ( self.rcvs.n -1 ) * self.nt, os.SEEK_CUR )
 
     try :
       self.fbreak.time = self.fbreak.time[ :, ircv ]
@@ -761,20 +794,21 @@ class rn_binary(binary) :
       self.fbreak.time = np.zeros( self.srcs.n, dtype=np.float )
     #}}}}}
 
-  def read_data_traces( self, traces ) : # ircv starts from 0 #{{{{{
+  def read_data_traces( self, traces, dtype=np.float32 ) : # ircv starts from 0 #{{{{{
     if not self.fbinh :
       self.open_data( op='r' )
       
     ntrace = len( traces )
+    ibyte  = np.dtype( dtype ).itemsize
 
-    self.data = np.zeros( ( ntrace, self.nt ), dtype=np.float32 )
+    self.data = np.zeros( ( ntrace, self.nt ), dtype=dtype )
     print( self.data.shape )
 
     for itrace in range( ntrace ) :
       traceno = traces[itrace]
       print( itrace, traceno)
-      self.fbinh.seek( 4*traceno*self.nt, os.SEEK_SET )
-      self.data[ itrace, : ] = np.fromfile( self.fbinh, dtype=np.float32,
+      self.fbinh.seek( ibyte*traceno*self.nt, os.SEEK_SET )
+      self.data[ itrace, : ] = np.fromfile( self.fbinh, dtype=dtype,
                                 count = self.nt )
 
     try :

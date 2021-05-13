@@ -383,15 +383,20 @@ class MCTimeDomainDataMod:
     self.nrcv=input.int('n1')
     self.nc=input.int('n2')
     self.nt  =input.int('n3')
-    self.nsrc=input.int('n4')
     self.drcv=input.float('d1')
     self.dc=input.float('d2')
     self.dt=input.float('d3')
-    self.dsrc=input.float('d4')
     self.orcv=input.float('o1')
     self.oc=input.float('o2')
     self.ot=input.float('o3')
-    self.osrc=input.float('o4')
+    if get_dim( input ) >= 4 :
+      self.osrc=input.float('o4')
+      self.nsrc=input.int('n4')
+      self.dsrc=input.float('d4')
+    else :
+      self.nsrc = 1
+      self.osrc = 0.
+      self.dsrc =1.
     self.set_t()
     # setup srcs and rcvs
     if fsrc :

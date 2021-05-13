@@ -8,7 +8,7 @@ import numpy as np
 import scipy as sp
 import copy
 from math import sqrt
-from td import set_t
+from .td import set_t
 # define class
 
 #--------------------------------------------------------------------------
