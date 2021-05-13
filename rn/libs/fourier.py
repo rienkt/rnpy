@@ -13,7 +13,13 @@ except :
 # FFT
 #=============================================================
 
-def rfft( din, fft_object=None, t=None, dt=None ) :
+def rfft( din, fft_object=None, t=None, dt=None, axis=-1 ) :
+
+  if axis != -1 :
+    din = np.swapaxes( din, -1, axis )
+
+  print( din.shape )
+
 
   try :
     if fft_object == None :
@@ -36,6 +42,12 @@ def rfft( din, fft_object=None, t=None, dt=None ) :
   ndout = dout.shape[-1]  
 
   fout = fout[:ndout]
+
+  if axis != 1 :
+    dout = np.swapaxes( dout, -1, axis )
+
+
+  print( dout.shape )
 
   if fft_object :
     return dout, fout

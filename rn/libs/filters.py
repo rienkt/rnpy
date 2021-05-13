@@ -188,7 +188,7 @@ def time_window( din, t, fbreak,
       dtmp[ itrace, itime_window_1 : ]                *= 0.
 
 
-  return d[ :, :nt ]
+  return dtmp[ :, :nt ]
 
 
 

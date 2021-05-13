@@ -23,7 +23,6 @@ __author__ = "Rie Kamei"
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.path   as mplpath
-import jdoepfert.roipoly as roipoly
 import rn.libs.filters as rn_filters
 
 #======================================================================
@@ -60,6 +59,7 @@ def rn_plot_v( k, v, ax ) :
 
 # this function doesn't worn
 def rn_pick_poly( ax, fig ) :
+  import jdoepfert.roipoly as roipoly
   poly = roipoly.roipoly( roicolor = 'w', ax=ax, fig=fig )
   polyf = poly.allypoints
   polyk = poly.allxpoints

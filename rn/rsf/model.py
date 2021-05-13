@@ -83,14 +83,14 @@ class Model:
       input.close()
 
   def write( self, output=None, f=None, fsrc=None ) :
-    print( 'here model 1', output, f, 'fsrc',  fsrc )
+    #print( 'here model 1', output, f, 'fsrc',  fsrc )
     if output is None :
       if fsrc :
         output = rsf.Output( f, src=rsf.Input( fsrc ) )
       else :
         #output = rsf.Output( tag='test.rsf' )
         output = rsf.Output( f ) #, src=rsf.Input('vp-00.rsf') )
-    print( 'here model 2' )
+    #print( 'here model 2' )
 
     output.put( 'n1', self.nz )
     output.put( 'n2', self.nx )
@@ -98,8 +98,8 @@ class Model:
     output.put( 'd2', self.dx )
     output.put( 'o1', self.oz )
     output.put( 'o2', self.ox )
-    eprint( self.d.max() )
-    eprint( self.d.shape )
+    #eprint( self.d.max() )
+    #eprint( self.d.shape )
     output.write( self.d.astype( np.float32 ) )
     output.close()
     #output.close()
