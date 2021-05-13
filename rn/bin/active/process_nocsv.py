@@ -26,7 +26,7 @@ __author__ = "Rie Kamei"
 
 import numpy as np
 
-from .core import rn_binary
+from .core_nocsv import rn_binary
 import rn.libs as rn_lib
 import rn.libs.fourier as rn_f
 import rn.libs.filters as rn_filters
@@ -41,29 +41,29 @@ import copy
 # calculate amplitude spectra
 
 
-def rk_amp_spectra( d ) :
-  d.fdata, d.f = rk_f.amp_spectra( d.data, d.dt )
+def rn_amp_spectra( d ) :
+  d.fdata, d.f = rn_f.amp_spectra( d.data, d.dt )
   return d 
 
-def rk_phase_spectra( d ) :
-  d.fphz, d.f = rk_f.phase_spectra( d.data, d.dt )
+def rn_phase_spectra( d ) :
+  d.fphz, d.f = rn_f.phase_spectra( d.data, d.dt )
   return d
 
 # calculate lmo
-def rk_lmo( d, tshift, inplace=0, otshift=0. ) :
+def rn_lmo( d, tshift, inplace=0, otshift=0. ) :
   if inplace == 0 :
     dout = copy.copy(d) 
 
   dout.ot = otshift
 
   if d.gather == 'all'  :
-    dout.data, dout.t = rk.libs.lmo.lmo( 
+    dout.data, dout.t = rn.libs.lmo.lmo( 
                                  d.data.reshape( d.srcs.n*d.rcvs.n, d.nt ),
                                  d.dt, tshift.reshape( d.srcs.n*d.rcvs.n ),
                                  otshift=otshift)
     dout.data = dout.data.reshape( ( d.srcs.n, d.rcvs.n, d.nt ) )
   else:
-    dout.data, dout.t = rk.libs.lmo.lmo( d.data, d.dt, tshift, otshift=otshift )
+    dout.data, dout.t = rn.libs.lmo.lmo( d.data, d.dt, tshift, otshift=otshift )
   
 
 
@@ -102,7 +102,7 @@ def time_phase_shift( d, dt, tshift, phzshift ) :
 
 
 def normalize( d, axis=-1 ) :
-  d.data = rk_normalize.normalize( d.data,  axis=axis )
+  d.data = rn_normalize.normalize( d.data,  axis=axis )
 #  amax = np.max( d, axis=axis ) 
 #  nshape = d.shape
 #  amax = amax.flatten()
@@ -118,7 +118,7 @@ def normalize( d, axis=-1 ) :
 
 
 # bandpass filter for all functions
-def rk_bandpass( din, lowcut, highcut, ntaper, pad=1.0, order=3  ) :
+def rn_bandpass( din, lowcut, highcut, ntaper, pad=1.0, order=3  ) :
 
   d = copy.copy( din )
   if din.gather == 'all' :
@@ -126,8 +126,8 @@ def rk_bandpass( din, lowcut, highcut, ntaper, pad=1.0, order=3  ) :
 
 
 
-  dtaper = rk_f.rk_hanning_taper( d.data, ntaper ) 
-  d.data = rk_f.butter_bandpass_filter( dtaper, lowcut, highcut,1./din.dt, pad=pad,
+  dtaper = rn_f.rn_hanning_taper( d.data, ntaper ) 
+  d.data = rn_f.butter_bandpass_filter( dtaper, lowcut, highcut,1./din.dt, pad=pad,
                                         order=order )[ :, :d.nt ]
 
   if din.gather == 'all' :
@@ -144,12 +144,12 @@ def rk_bandpass( din, lowcut, highcut, ntaper, pad=1.0, order=3  ) :
 # 
 # careful! window starts from fbreak + top_tshift - top_taper
 
-def rk_time_window( din, top_tshift, top_taper, window_length, bottom_taper,
+def rn_time_window( din, top_tshift, top_taper, window_length, bottom_taper,
                     inplace=1 ) :
   
   #d = copy.copy(din)
   if inplace == 0 :
-    d = rk_binary( ref=din )
+    d = rn_binary( ref=din )
   else :
     d = din
 
@@ -208,10 +208,10 @@ def rk_time_window( din, top_tshift, top_taper, window_length, bottom_taper,
   return d
 
 
-def rk_time_window_v0_v1( din,  v0in, v1in, top_taper, bottom_taper, 
+def rn_time_window_v0_v1( din,  v0in, v1in, top_taper, bottom_taper, 
                           top_tshift=0., bottom_tshift=0., inplace=1 ) :
   if inplace == 0 :
-    d = rk_binary( ref=din )
+    d = rn_binary( ref=din )
     d.data = copy.copy( din.data )
   else :
     d = din
@@ -224,7 +224,7 @@ def rk_time_window_v0_v1( din,  v0in, v1in, top_taper, bottom_taper,
   t0 = d.offset / v1 + top_tshift
   t1 = d.offset / v0 + bottom_tshift
 
-  d.data, nshape_in = rk_filters.dim_convert_to2D( d.data )
+  d.data, nshape_in = rn_filters.dim_convert_to2D( d.data )
 
   n0, n1 = d.data.shape
 
@@ -233,7 +233,7 @@ def rk_time_window_v0_v1( din,  v0in, v1in, top_taper, bottom_taper,
 
   for i0 in range( n0 ) :
     if t0[i0] <   t1[i0] :
-      d.data[i0,:] = rk_filters.time_window_hanning( 
+      d.data[i0,:] = rn_filters.time_window_hanning( 
                         d.data[ i0, : ], d.t, t0[i0], t1[i0],
                         bottom_taper, top_taper )
     else :
@@ -249,19 +249,19 @@ def rk_time_window_v0_v1( din,  v0in, v1in, top_taper, bottom_taper,
  
 
 
-def rk_top_mute( din, window_length, top_taper, inplace=1 ) :
+def rn_top_mute( din, window_length, top_taper, inplace=1 ) :
   fbreak_sav = din.fbreak.times
   din.fbreak.times = np.ma.zeros( fbreak_sav.shape, dtype=np.float )            
   din.fbreak.times.mask = np.zeros( fbreak_sav.shape, dtype=bool )
-  dout = rk_time_window( din, window_length+top_taper, top_taper, din.nt*din.dt, 0, inplace=inplace )
+  dout = rn_time_window( din, window_length+top_taper, top_taper, din.nt*din.dt, 0, inplace=inplace )
   dout.fbreak.times = fbreak_sav
   return dout 
 
-def rk_bottom_mute( din, window_length, bottom_taper ) :
+def rn_bottom_mute( din, window_length, bottom_taper ) :
   fbreak_sav = din.fbreak.times
   din.fbreak.times = np.ma.zeros( fbreak_sav.shape, dtype=np.float )            
   din.fbreak.times.mask = np.zeros( fbreak_sav.shape, dtype=bool )
-  dout = rk_time_window( din, 0, 0, din.dt*din.nt-window_length, bottom_taper )
+  dout = rn_time_window( din, 0, 0, din.dt*din.nt-window_length, bottom_taper )
   dout.fbreak.times = fbreak_sav
   return dout 
 

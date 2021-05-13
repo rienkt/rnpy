@@ -84,8 +84,9 @@ class Model:
 
 
   def initialize( self, val=0.0 ):
-    self.data = np.ones( ( self.nx, self.nz ), np.float32 
+    self.d = np.ones( ( self.nx, self.nz ), np.float32 
                        ) * val
+    self.data = self.d
 
   def initialise( self, val=0.0 ):
     self.initialize( 0.0 )
@@ -120,17 +121,19 @@ class Model:
 
   def read_data( self , vmin=-9999.) :
     fbin = os.path.join( self.fdir, self.fbin )
-    self.data = np.ma.masked_less_equal( 
+    self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.float32 
                   ).reshape( self.nx, self.nz ), vmin )
+    self.data =self.d
 
   def read_data_fast( self, f=None ) :
     fbin = os.path.join( self.fdir, self.fbin )
     if f :
       fbin = f
-    self.data = np.ma.masked_less_equal( 
+    self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.int32 
                   ).reshape( self.nz, self.nx ), -9999. ).T.astype( np.float )
+    self.data = self.d
 
   def read( self, fheader=None, vmin=-9999. ):
     self.read_header( fheader )
@@ -164,29 +167,29 @@ class Model:
     fbin = os.path.join( self.fdir, self.fbin )
 
     try :
-      self.data.filled( -9999. ).astype( np.float32 ).tofile( fbin )
+      self.d.filled( -9999. ).astype( np.float32 ).tofile( fbin )
     except :
-      self.data.astype( np.float32 ).tofile( fbin )
+      self.d.astype( np.float32 ).tofile( fbin )
 
   def write_data_int( self ) :  
     fbin = os.path.join( self.fdir, self.fbin )
 
-    self.data = self.data.astype( np.int32 )
+    self.d = self.d.astype( np.int32 )
 
     try :
-      self.data.filled( -9999 ).tofile( fbin )
+      self.d.filled( -9999 ).tofile( fbin )
     except :
-      self.data.tofile( fbin )
+      self.d.tofile( fbin )
 
   def write_data_fast( self ) :  
     fbin = os.path.join( self.fdir, self.fbin )
 
-    self.data = self.data.astype( np.int32 )
+    self.d = self.data.astype( np.int32 )
 
     try :
-      self.data.T.filled( -9999 ).tofile( fbin )
+      self.d.T.filled( -9999 ).tofile( fbin )
     except :
-      self.data.T.tofile( fbin )
+      self.d.T.tofile( fbin )
 
 
   def write( self, fheader=None, fbin=None ) :
@@ -198,9 +201,9 @@ class Model:
     self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
 
   def norm( self ):
-    norm = np.dot( self.data.reshape( ( self.nx * self.nz, 1 ) )
+    norm = np.dot( self.d.reshape( ( self.nx * self.nz, 1 ) )
                        [ 0:self.nx * self.nz, 0 ], 
-                   self.data.reshape( ( self.nx * self.nz, 1 ) ).T
+                   self.d.reshape( ( self.nx * self.nz, 1 ) ).T
                        [ 0, 0 : self.nx * self.nz ] )
     norm = sqrt( norm )
     return norm
@@ -240,8 +243,9 @@ class Modelxy:
 
 
   def initialize( self, val=0.0 ):
-    self.data = np.ones( ( self.nx, self.ny ), np.float32 
+    self.d = np.ones( ( self.nx, self.ny ), np.float32 
                        ) * val
+    self.data = self.d
 
   def initialise( self, val=0.0 ):
     self.initialize( 0.0 )
@@ -276,9 +280,10 @@ class Modelxy:
 
   def read_data( self ) :
     fbin = os.path.join( self.fdir, self.fbin )
-    self.data = np.ma.masked_less_equal( 
+    self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.float32 
                   ).reshape( self.ny, self.nx ), -9999. )
+    self.data =self.d
 
 
   def read( self, fheader=None ):
@@ -313,29 +318,29 @@ class Modelxy:
     fbin = os.path.join( self.fdir, self.fbin )
 
     try :
-      self.data.filled( -9999. ).astype( np.float32 ).tofile( fbin )
+      self.d.filled( -9999. ).astype( np.float32 ).tofile( fbin )
     except :
-      self.data.astype( np.float32 ).tofile( fbin )
+      self.d.astype( np.float32 ).tofile( fbin )
 
   def write_data_int( self ) :  
     fbin = os.path.join( self.fdir, self.fbin )
 
-    self.data = self.data.astype( np.int32 )
+    self.d = self.d.astype( np.int32 )
 
     try :
-      self.data.filled( -9999 ).tofile( fbin )
+      self.d.filled( -9999 ).tofile( fbin )
     except :
-      self.data.tofile( fbin )
+      self.d.tofile( fbin )
 
   def write_data_fast( self ) :  
     fbin = os.path.join( self.fdir, self.fbin )
 
-    self.data = self.data.astype( np.int32 )
+    self.d = self.data.astype( np.int32 )
 
     try :
-      self.data.T.filled( -9999 ).tofile( fbin )
+      self.d.T.filled( -9999 ).tofile( fbin )
     except :
-      self.data.T.tofile( fbin )
+      self.d.T.tofile( fbin )
 
 
   def write( self, fheader=None, fbin=None ) :
@@ -388,8 +393,9 @@ class Model3d:
 
 
   def initialize( self, val=0.0 ):
-    self.data = np.ones( ( self.nx, self.ny, self.nz ), np.float32 
+    self.d = np.ones( ( self.nx, self.ny, self.nz ), np.float32 
                        ) * val
+    self.data =self.d
 
   def initialise( self, val=0.0 ):
     self.initialize( 0.0 )
@@ -427,16 +433,18 @@ class Model3d:
 
   def read_data( self ) :
     fbin = os.path.join( self.fdir, self.fbin )
-    self.data = np.ma.masked_less_equal( 
+    self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.float32 
                   ).reshape( self.nx, self.ny,  self.nz ), -9999. )
+    self.data = self.d
 
   def read_data_fast( self ) :
     fbin = os.path.join( self.fdir, self.fbin )
-    self.data = np.ma.masked_less_equal( 
+    self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.int32 
                   ).reshape( self.nz, self.ny, self.nx ), -9999. ).astype( np.float )
-    self.data = self.data.transpose( 2,1,0)
+    self.d = self.d.transpose( 2,1,0)
+    self.data = self.d
 
 
   def read( self, fheader=None ):
@@ -472,29 +480,29 @@ class Model3d:
     fbin = os.path.join( self.fdir, self.fbin )
 
     try :
-      self.data.filled( -9999. ).astype( np.float32 ).tofile( fbin )
+      self.d.filled( -9999. ).astype( np.float32 ).tofile( fbin )
     except :
-      self.data.astype( np.float32 ).tofile( fbin )
+      self.d.astype( np.float32 ).tofile( fbin )
 
   def write_data_int( self ) :  
     fbin = os.path.join( self.fdir, self.fbin )
 
-    self.data = self.data.astype( np.int32 )
+    self.d = self.d.astype( np.int32 )
 
     try :
-      self.data.filled( -9999 ).tofile( fbin )
+      self.d.filled( -9999 ).tofile( fbin )
     except :
-      self.data.tofile( fbin )
+      self.d.tofile( fbin )
 
   def write_data_fast( self ) :  
     fbin = os.path.join( self.fdir, self.fbin )
 
-    self.data = self.data.astype( np.int32 )
+    self.d = self.data.astype( np.int32 )
 
     try :
-      self.data.transpose( 2,1,0).filled( -9999 ).tofile( fbin )
+      self.d.transpose( 2,1,0).filled( -9999 ).tofile( fbin )
     except :
-      self.data.transpose(2,1,0).tofile( fbin )
+      self.d.transpose(2,1,0).tofile( fbin )
 
 
   def write( self, fheader=None, fbin=None ) :
@@ -508,9 +516,9 @@ class Model3d:
 
   def norm( self ):
    self.ntrace = self.nx * self.ny * self.nz
-   norm = np.dot( self.data.reshape( ( self.nx * self.nz, 1 ) )
+   norm = np.dot( self.d.reshape( ( self.nx * self.nz, 1 ) )
                        [ 0:self.ntrace, 0 ], 
-                   self.data.reshape( ( self.nx * self.nz, 1 ) ).T
+                   self.d.reshape( ( self.nx * self.nz, 1 ) ).T
                        [ 0, 0 : self.ntrace ] )
    norm = sqrt( norm )
    return norm

@@ -74,7 +74,7 @@ def to_latlon( utmx, utmy, izone, czone ) :
     lon = tmp[1]
   return lat, lon
 
-def from_latlon( lat, lon, izone, czone ) :
+def from_latlon( lat, lon, izone=None, czone=None ) :
   if type( lat ) is np.ndarray  :
     n = lat.size
     utmx = np.zeros( n, dtype=np.float )
