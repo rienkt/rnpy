@@ -40,19 +40,19 @@ def apply( d, t, laplace, tau=None ) :
     laplace = 1./tau
 
   filt = np.exp( -t * laplace )
-  print filt.shape
-  print filt
-  print t
-  print laplace
+  #print filt.shape
+  #print filt
+  #print t
+  #print laplace
 
   ffilt = np.repeat( filt.reshape( (1, nt) ), ntrace, axis=0 )
 
-  print ffilt.shape
-  print ffilt
+  #print ffilt.shape
+  #print ffilt
 
   dout = ( d * ffilt ).reshape( dshape )
 
-  print dout.max()
+  #print dout.max()
 
 
   return dout

@@ -51,28 +51,29 @@ def normalize( d, axis=-1, i0=0, i1=None) :
   if i1 is None :
     i1 = n1 
   #print( d.size, n0, n1 )
-
-  d = d.reshape( ( n0, n1 ) )
+  import copy
+  dout = copy.copy( d) 
+  dout = dout.reshape( ( n0, n1 ) )
  
-  idx = np.where( np.isnan( d ) )
+  idx = np.where( np.isnan( dout ) )
 
-  amax = np.amax( np.abs(d[:,i0:i1] ), axis = -1 ) 
+  amax = np.amax( np.abs(dout[:,i0:i1] ), axis = -1 ) 
   #print( amax, amax.shape)
 
-  d[idx] = 0.
+  dout[idx] = 0.
 
   amax[ amax < 1e-28 ] = 1. 
 
   for i0 in range( n0) :
     
-    d[ i0, : ] = d[ i0, : ] / amax[ i0 ]
+    dout[ i0, : ] = dout[ i0, : ] / amax[ i0 ]
     #print( np.abs( d[i0,:] ).max())
 
     
   if axis >= 0 :
-    return np.swapaxes( d.reshape( nshape ), -1, axis )
+    return np.swapaxes( dout.reshape( nshape ), -1, axis )
   else :
-    return d.reshape( nshape )
+    return dout.reshape( nshape )
 
 def normalize_rms( d, axis=-1, i0=0, i1=None) :
 

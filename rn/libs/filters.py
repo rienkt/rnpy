@@ -146,6 +146,7 @@ def time_window_hanning( din, t, tbeg, tend, top_taper, bottom_taper ) :
 def time_window( din, t, fbreak, 
                 top_tshift, top_taper, window_length, bottom_taper,
                     inplace=1 ) :
+  # do not pass class. only pass ndarrays
   
   if inplace == 0 :
     d = np.zeros_like( din )
@@ -153,7 +154,7 @@ def time_window( din, t, fbreak,
     d = din
 
   dt = t[1]-t[0] 
-  nt = t.size()
+  nt = t.size
 
   top_ntshift   = int( top_tshift /dt )  
   top_ntaper    = int( top_taper /dt )
@@ -168,21 +169,26 @@ def time_window( din, t, fbreak,
                                     bottom_filter ) )
   ntime_window = len( time_window_filter )
 
-  ntraces = d.shape[ 0 ] 
-  for itrace in range( ntraces ) :
+  ntrace = d.shape[ 0 ] 
+  # make arrays longer to avoid the end of window is too long...
+  dtmp = np.concatenate( ( d, np.zeros( ( ntrace, ntime_window ), dtype=np.float ) ), axis=-1 )
+
+  for itrace in range( ntrace ) :
     if fbreak.mask[ itrace ] :
-      d[ itrace, : ] *= 0.
+      dtmp[ itrace, : ] *= 0.
     else :
-      nfbreak = np.argmin( abs( d.t - d.fbreak.times[ itrace ] ) )
+      #nfbreak = np.argmin( abs( t - fbreak.times[ itrace ] ) )
+      nfbreak = np.argmin( abs( t - fbreak[ itrace ] ) )
 
       itime_window_0 = max( nfbreak + top_ntshift - top_ntaper, 0 )
       itime_window_1 = itime_window_0 + ntime_window
-      d[ itrace, : itime_window_0 ]                *= 0.
-      d[ itrace, itime_window_0 : itime_window_1 ] *= time_window_filter 
-      d[ itrace, itime_window_1 : ]                *= 0.
+      #print( itrace, itime_window_1, itime_window_0, ntime_window )
+      dtmp[ itrace, : itime_window_0 ]                *= 0.
+      dtmp[ itrace, itime_window_0 : itime_window_1 ] *= time_window_filter 
+      dtmp[ itrace, itime_window_1 : ]                *= 0.
 
 
-  return d
+  return dtmp[ :, :nt ]
 
 
 

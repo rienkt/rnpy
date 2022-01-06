@@ -17,7 +17,7 @@ import scipy as sp
 from math import sqrt
 
 from .fd import rn_freq
-
+from rn.libs.misc import eprint
 #================================================================
 # define class
 #================================================================
@@ -41,6 +41,7 @@ class Model:
       self.oz = oz
       self.dz = dz
     self.initialize( init_value )
+    self.set_axis()
 
   def initialize( self, init_value=0.0 ):
     self.d = np.ones( ( self.nx, self.nz ), np.float32 
@@ -59,6 +60,7 @@ class Model:
     self.dx = input.float( 'd2' )
     self.oz = input.float( 'o1' )
     self.ox = input.float( 'o2' )
+    self.set_axis()
  
 
   def read( self, input=None, f=None ):
@@ -80,9 +82,15 @@ class Model:
     if flag == 1 :
       input.close()
 
-  def write( self, output=None, f=None ) :
+  def write( self, output=None, f=None, fsrc=None ) :
+    #print( 'here model 1', output, f, 'fsrc',  fsrc )
     if output is None :
-      output = rsf.Output( f )
+      if fsrc :
+        output = rsf.Output( f, src=rsf.Input( fsrc ) )
+      else :
+        #output = rsf.Output( tag='test.rsf' )
+        output = rsf.Output( f ) #, src=rsf.Input('vp-00.rsf') )
+    #print( 'here model 2' )
 
     output.put( 'n1', self.nz )
     output.put( 'n2', self.nx )
@@ -90,8 +98,11 @@ class Model:
     output.put( 'd2', self.dx )
     output.put( 'o1', self.oz )
     output.put( 'o2', self.ox )
+    #eprint( self.d.max() )
+    #eprint( self.d.shape )
     output.write( self.d.astype( np.float32 ) )
     output.close()
+    #output.close()
 
   def set_axis( self ) :
     self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox

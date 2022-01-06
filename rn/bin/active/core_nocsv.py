@@ -58,11 +58,23 @@ class rn_loc( object ) : #{{{{{
 
   def set_n( self, n=1 ) :
     self.n  = n
- 
-  def initialize( self, val=0.) :
-    self.x = np.zeros( self.n, dtype=np.float )
-    self.y = np.zeros( self.n, dtype=np.float )
-    self.z = np.zeros( self.n, dtype=np.float )
+
+  def set_regular( self, n=None, ox=0.,dx=1.,oz=0.,dz=1.) :
+    if n :
+      self.set_n( n=n )
+    if dx == 0 :
+      self.x = np.ones( self.n, dtype=np.float ) * ox 
+    else :
+      self.x = np.arange( self.n, dtype=np.float ) * dx + ox
+    if dz == 0 :
+      self.z = np.ones( self.n, dtype=np.float ) * oz 
+    else :
+      self.z = np.arange( self.n, dtype=np.float ) * dz + oz
+
+  def initialize( self, val=0. ) :
+    self.x = np.ones( self.n, dtype=np.float ) * val
+    self.y = np.ones( self.n, dtype=np.float ) * val
+    self.z = np.ones( self.n, dtype=np.float ) * val
     self.id = []
     self.time = []
     for i in range( self.n ) :

@@ -33,8 +33,8 @@ def resample2d( model, dxout, dzout ) :
   nx = model.nx
   dx = model.dx
 
-  print nz,dz,dzout
-
+  print( nz,dz,dzout )
+ 
   nzout = int( ( nz - 1 ) * dz / dzout ) + 1
   nxout = int( ( nx - 1 ) * dx / dxout ) + 1
 
@@ -43,7 +43,7 @@ def resample2d( model, dxout, dzout ) :
 
   modelout.set_axis()
 
-  print model.z.shape, model.x.shape, model.d.shape
+  print( model.z.shape, model.x.shape, model.d.shape )
 
   f = interpolate.interp2d( model.z, model.x, model.d, kind = 'linear' )
   modelout.d = f( modelout.z, modelout.x )
