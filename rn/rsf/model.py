@@ -116,6 +116,8 @@ class Model:
     norm = sqrt( norm )
     return norm
      
+  def normalize( self ):
+    self.d /= np.abs( self.d ).max()
 
   def m2km( self ) :
     self.d *= 1e-3
