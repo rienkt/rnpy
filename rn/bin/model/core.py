@@ -120,6 +120,7 @@ class Model:
     self.read_data()
 
   def read_data( self , vmin=-9999.) :
+    print( vmin )
     fbin = os.path.join( self.fdir, self.fbin )
     self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.float32 
@@ -282,7 +283,7 @@ class Modelxy:
     fbin = os.path.join( self.fdir, self.fbin )
     self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.float32 
-                  ).reshape( self.ny, self.nx ), -9999. )
+                 ).reshape( self.nx, self.ny ), -9999. )
     self.data =self.d
 
 
@@ -296,6 +297,7 @@ class Modelxy:
 
     self.fheader = fh + '.header' 
     self.fbin = fh + '.bin' 
+    print( self.fbin )
 
 
   def write_header( self, fheader=None, fbin=None) :
@@ -351,6 +353,12 @@ class Modelxy:
     self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
     self.y = np.arange( 0, self.ny, dtype=np.float ) * self.dy + self.oy
 
+
+  def extract( self, ix0, ix1, iy0, iy1 ) :
+    m = Modelxy( dx=self.dx, dy=self.dy, nx=ix1-ix0, ny=iy1-iy0,
+                ox=self.x[ix0], oy=self.y[iy0] )
+    m.d = self.d[ ix0:ix1, iy0:iy1 ]
+    return m
      
 #}}}}}     
 

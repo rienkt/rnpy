@@ -182,23 +182,31 @@ def hanning_taper( din, ntaper ) :
                                np.ones( din.shape[-1] - ntaper *2 ),
                                fwin[ -ntaper: ]
                                ))
-    ntrace = din.shape[0]
-    dout = np.zeros( din.shape, dtype=din.dtype )
-    for itrace in range(ntrace) :
-        dout[ itrace, : ] = din[ itrace, : ] * ftaper
+
+    if din.ndim == 1 :
+      dout = din * ftaper
+    else :
+      ntrace = din.shape[0]
+      dout = np.zeros( din.shape, dtype=din.dtype )
+      for itrace in range(ntrace) :
+          dout[ itrace, : ] = din[ itrace, : ] * ftaper
     return dout
 
 #=============================================================
 # padding
 #=============================================================
-def padding( din, npad, axis=1) :
-  n0, n1 = din.shape
-
-  n1pad = n1 + npad #int( float( n1 ) * pad )
-
-  xpad = np.repeat( np.zeros( ( 1, n1pad - n1 ) ) , n0, axis=0)
-
-  return np.hstack( (din, xpad ) )
+def padding( din, npad, axis=0) :
+  if din.ndim == 1 :
+    n1 = din.shape[0]
+    n1pad = n1 + npad #int( float( n1 ) * pad )
+    xpad = np.zeros(  n1pad - n1 )
+    return np.hstack( (din, xpad ) )
+   
+  else : 
+    n0, n1 = din.shape
+    n1pad = n1 + npad #int( float( n1 ) * pad )
+    xpad = np.repeat( np.zeros( ( 1, n1pad - n1 ) ) , n0, axis=0)
+    return np.hstack( (din, xpad ) )
  
  
 

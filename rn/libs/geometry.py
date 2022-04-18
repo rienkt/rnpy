@@ -74,6 +74,7 @@ def to_latlon( utmx, utmy, izone, czone ) :
     lon = tmp[1]
   return lat, lon
 
+
 def from_latlon( lat, lon, izone=None, czone=None ) :
   if type( lat ) is np.ndarray  :
     n = lat.size
@@ -91,4 +92,8 @@ def from_latlon( lat, lon, izone=None, czone=None ) :
   return utmx, utmy
 
 
+def utm2latlon( utmx, utmy, izone, czone ) :
+  return to_latlon( utmx, utmy, izone, czone )
 
+def latlon2utm( lat, lon, izone=None, czone=None ) :
+  return from_latlon( lat, lon, izone, czone )
