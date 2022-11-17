@@ -302,6 +302,7 @@ class AxesFormat :
   def __init__ (self, xlabel=None, ylabel=None, xmin=None, xmax=None,
                 ymin=None, ymax=None, 
                 xticks=None, yticks=None, cticks=None, 
+                xscale=None, yscale=None,
                 xticks_minor=None, yticks_minor=None, cticks_minor=None,
                 flag_xminor=0, flag_yminor=0,
                 xticklabels=None, yticklabels=None,
@@ -310,7 +311,8 @@ class AxesFormat :
                 subtitle_dir='h', 
                 subtitle_halign='center', subtitle_valign='center',
                 subtitle_fontsize=12, subtitle_fontweight='bold',
-                subtitle_alpha = 0,
+                subtitle_color = 'k', 
+                subtitle_bbox_alpha = 0,
                 xgrid=True, ygrid=True,
                 grid_linewidth=1, grid_linestyle=':',
                 fontsize=14,
@@ -322,6 +324,8 @@ class AxesFormat :
     self.xmax   = xmax
     self.ymin   = ymin
     self.ymax   = ymax
+    self.xscale = xscale
+    self.yscale = yscale
     self.xticks  = xticks
     self.yticks  = yticks
     self.cticks  = cticks
@@ -342,9 +346,10 @@ class AxesFormat :
     self.subtitle_dir = subtitle_dir
     self.subtitle_halign= subtitle_halign
     self.subtitle_valign= subtitle_valign
-    self.subtitle_alpha = subtitle_alpha
+    self.subtitle_bbox_alpha = subtitle_bbox_alpha
     self.subtitle_fontsize = subtitle_fontsize
     self.subtitle_fontweight = subtitle_fontweight
+    self.subtitle_color = subtitle_color
     
     self.subtitle2 = None
     self.subtitle2_position = [ -0.1, 0.5 ]
@@ -387,6 +392,11 @@ class AxesFormat :
     if self.yaxis_loc == 'right' :
       ax.yaxis.tick_right()
       ax.yaxis.set_label_position('right')
+
+    if self.xscale :
+      ax.set_xscale( self.xscale )
+    if self.yscale :
+      ax.set_yscale( self.yscale )
  
     if type( self.xticks ) is np.ndarray :
       ax.set_xticks( self.xticks )
@@ -416,7 +426,6 @@ class AxesFormat :
       ax.set_yticklabels( self.yticklabels )
     elif self.yticklabels == '' :
       ax.set_yticklabels( self.yticklabels )
-
       
 
     if self.title :
@@ -475,8 +484,11 @@ class AxesFormat :
       #print( self.subtitle_fontsize )
 
       self.ax_subtitle = ax.text( -0.1, 0.5, self.subtitle, 
-          fontsize=self.subtitle_fontsize, fontweight=self.subtitle_fontweight,
-               bbox=dict(facecolor='w', alpha=self.subtitle_alpha, linewidth=0),
+               fontsize=self.subtitle_fontsize, 
+               fontweight=self.subtitle_fontweight,
+               color = self.subtitle_color,
+               bbox=dict( facecolor='w', 
+                          alpha=self.subtitle_bbox_alpha, linewidth=0),
                horizontalalignment=self.subtitle_halign, 
                verticalalignment=self.subtitle_valign,
                transform=ax.transAxes, 
