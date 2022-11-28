@@ -33,7 +33,7 @@ def resample2d( model, dxout, dzout ) :
   nx = model.nx
   dx = model.dx
 
-  print nz,dz,dzout
+  print( nz,dz,dzout )
 
   nzout = int( ( nz - 1 ) * dz / dzout ) + 1
   nxout = int( ( nx - 1 ) * dx / dxout ) + 1
@@ -43,7 +43,7 @@ def resample2d( model, dxout, dzout ) :
 
   modelout.set_axis()
 
-  print model.z.shape, model.x.shape, model.data.shape
+  print( model.z.shape, model.x.shape, model.data.shape )
 
   f = interpolate.interp2d( model.z, model.x, model.data, kind = 'linear' )
   modelout.data = f( modelout.z, modelout.x )
@@ -95,15 +95,15 @@ def resample2d_mask( model, dxout, dzout ):
                                  mask.compressed(),
                                 ( zzout, xxout ), method='linear' )
 
-  print  'mask2', mask2
+  #print  'mask2', mask2
   mask3 = np.ma.masked_invalid( mask2 )
-  print  'mask3', mask3 
-  print  mask3.mask
+  #print  'mask3', mask3 
+  #print  mask3.mask
   modelout.data = np.ma.asarray( modelout.data )
   modelout.data.mask = mask3.mask
   #modelout.data[ np.where( mask3.mask ) ] = np.nan
 
-  print modelout.data
-  print modelout.data.mask
+  #print modelout.data
+  #print modelout.data.mask
 
   return modelout

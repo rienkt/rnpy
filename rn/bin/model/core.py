@@ -119,11 +119,11 @@ class Model:
   def read_bin( self ) :
     self.read_data()
 
-  def read_data( self , vmin=-9999.) :
+  def read_data( self , vmin=-9999., ftype = np.float32) :
     print( vmin )
     fbin = os.path.join( self.fdir, self.fbin )
     self.d = np.ma.masked_less_equal( 
-                  np.fromfile( fbin, dtype = np.float32 
+                  np.fromfile( fbin, dtype = ftype #np.float32 
                   ).reshape( self.nx, self.nz ), vmin )
     self.data =self.d
 
