@@ -22,6 +22,7 @@ __author__ = "Rie Nakata (Kamei)"
 #==============================================================================
 
 import numpy as np
+import pandas as pd
 #import scipy as sp
 #import matplotlib.pyplot as plt
 #import sys
@@ -59,6 +60,7 @@ def rotate_xy( xin, yin, rot ) :
   return xout, yout
 
 def to_latlon( utmx, utmy, izone, czone ) :
+  print( izone, czone )
   if type( utmx ) is np.ndarray  :
     n = utmx.size
     lat = np.zeros( n, dtype=np.float )
@@ -76,7 +78,7 @@ def to_latlon( utmx, utmy, izone, czone ) :
 
 
 def from_latlon( lat, lon, izone=None, czone=None ) :
-  if type( lat ) is np.ndarray  :
+  if ( type( lat ) is np.ndarray  ) or ( type(lat) is pd.core.series.Series) : 
     n = lat.size
     utmx = np.zeros( n, dtype=np.float )
     utmy = np.zeros( n, dtype=np.float )
