@@ -135,7 +135,7 @@ def create_colorbar( fig, axim=None, caxfmt=None,
 
 def create_colorbar_multiaxes( fig, axim0, axim1,
     bottom=None, height=None, left=None, width=None,
-         dbottom=None, dleft=None, flag='h') :
+         dbottom=None, dleft=None, dright=None, flag='h') :
   #{{{{{
 
   # left, bottom, width, height
@@ -152,12 +152,15 @@ def create_colorbar_multiaxes( fig, axim0, axim1,
       impos[1] = bottom 
 
     impos[2] = impos1[0] + impos1[2] - impos0[0]
+    if dright :
+      impos[2] += dright
   else :
     impos[2] = width
     if dleft :
       impos[0] += dleft
     else :
       impos[0] = left
+      
     impos[3] = impos1[1] + impos1[3] - impos0[1]
 
   return fig.add_axes( impos )
