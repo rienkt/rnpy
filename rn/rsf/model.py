@@ -73,14 +73,19 @@ class Model:
         print( 'file %f cannot be found'%f )
       flag = 1
 
-    self.read_header( input=input ) 
-    #print( self.dx )
 
-    self.initialize( 0.0 )
-    input.read(self.d)
-    self.set_axis()
-    if flag == 1 :
-      input.close()
+    try :
+      self.read_header( input=input ) 
+      #print( self.dx )
+
+      self.initialize( 0.0 )
+      input.read(self.d)
+      self.set_axis()
+      if flag == 1 :
+        input.close()
+    except :
+      print( 'usage: self.read( input=hoge, f=hoge.rsf )' )
+      print( '       we need either of input or file name' )
 
   def write( self, output=None, f=None, fsrc=None ) :
     #print( 'here model 1', output, f, 'fsrc',  fsrc )
