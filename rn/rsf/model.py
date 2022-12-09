@@ -71,7 +71,7 @@ class Model:
         input = rsf.Input( f )
       except :
         print( 'file %f cannot be found'%f )
-      flag = 1
+      #flag = 1
 
 
     try :
@@ -81,8 +81,8 @@ class Model:
       self.initialize( 0.0 )
       input.read(self.d)
       self.set_axis()
-      if flag == 1 :
-        input.close()
+      #if flag == 1 :
+      #  input.close()
     except :
       print( 'usage: self.read( input=hoge, f=hoge.rsf )' )
       print( '       we need either of input or file name' )
