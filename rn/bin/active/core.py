@@ -82,12 +82,12 @@ class rn_loc( object ) : #{{{{{
     self.n  = n
  
   def initialize( self, val=0.) :
-    self.x = np.zeros( self.n, dtype=np.float )
-    self.y = np.zeros( self.n, dtype=np.float )
-    self.z = np.zeros( self.n, dtype=np.float )
-    self.lat = np.zeros( self.n, dtype=np.float )
-    self.lon = np.zeros( self.n, dtype=np.float )
-    self.id = [] #np.arange( self.n, dtype=np.int )
+    self.x = np.zeros( self.n, dtype=float )
+    self.y = np.zeros( self.n, dtype=float )
+    self.z = np.zeros( self.n, dtype=float )
+    self.lat = np.zeros( self.n, dtype=float )
+    self.lon = np.zeros( self.n, dtype=float )
+    self.id = [] #np.arange( self.n, dtype=int )
     self.time = []
     self.dist = None
     for i in range( self.n ) :
@@ -191,7 +191,7 @@ class rn_offset( object ) : #{{{{{
     self.n  = n
  
   def initialize( self, val=0.) :
-    self.offset = np.zeros( self.n, dtype=np.float )
+    self.offset = np.zeros( self.n, dtype=float )
     self.id = []
     self.time = []
     for i in range( self.n ) :
@@ -206,7 +206,7 @@ class rn_offset( object ) : #{{{{{
     self.id = np.array( [ line.split()[0] for line in lines ],
                         dtype=np.unicode_ )
     self.d  = np.array( [ line.split()[1] for line in lines ], 
-                        dtype=np.float ) 
+                        dtype=float ) 
 
 
   def write( self ) :
@@ -228,9 +228,9 @@ class rn_fbreak( object ) : #{{{{{
     self.n = 1
 
   def initialize( self, srcs, rcvs ) :
-    self.time = np.ma.zeros( ( srcs.n, rcvs.n ), dtype=np.float )
-    self.isrc = np.zeros( ( srcs.n, rcvs.n ), dtype=np.int)
-    self.ircv = np.zeros( ( srcs.n, rcvs.n ), dtype=np.int)
+    self.time = np.ma.zeros( ( srcs.n, rcvs.n ), dtype=float )
+    self.isrc = np.zeros( ( srcs.n, rcvs.n ), dtype=int)
+    self.ircv = np.zeros( ( srcs.n, rcvs.n ), dtype=int)
 
     try :
       ( self.srcid, self.rcvid ) = np.meshgrid( srcs.id, rcvs.id )
@@ -333,7 +333,7 @@ class rn_freq( object ) : #{{{{{
     self.n  = n
  
   def initialize( self, val=0.) :
-    self.d = np.ones( self.n, dtype=np.float ) * val
+    self.d = np.ones( self.n, dtype=float ) * val
 
   def read( self ) :
     with open( os.path.join( self.fdir, self.fname ) ) as f :
@@ -342,7 +342,7 @@ class rn_freq( object ) : #{{{{{
     self.set_n( len(lines) )
 
     self.d = np.array( [ line.split()[0] for line in lines ],
-                        dtype=np.float )
+                        dtype=float )
 
   def write( self ) :
     outlines = []
@@ -381,8 +381,8 @@ class binary( ) :
       self.fheader = 'test.header' 
 
 
-      self.ircvs, self.isrcs = np.meshgrid( np.arange( nrcv, dtype=np.int ),
-                                  np.arange( nsrc, dtype=np.int ) )
+      self.ircvs, self.isrcs = np.meshgrid( np.arange( nrcv, dtype=int ),
+                                  np.arange( nsrc, dtype=int ) )
 
       self.set_cmp()
 
@@ -595,8 +595,8 @@ class rn_binary(binary) :
               self.fdir, self.fheader ) )
 
     self.ircvs, self.isrcs = np.meshgrid( 
-                              np.arange( self.rcvs.n, dtype=np.int ),
-                              np.arange( self.srcs.n, dtype=np.int ) )
+                              np.arange( self.rcvs.n, dtype=int ),
+                              np.arange( self.srcs.n, dtype=int ) )
 
     # line 4 fbreak information ( optional ) ....
     self.fbreak = rn_fbreak()
@@ -607,7 +607,7 @@ class rn_binary(binary) :
     except :
       self.fbreak.fname = None
       self.fbreak.time = np.ma.masked_equal( 
-                      np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=np.float ), 
+                      np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=float ), 
                       0.0 ) 
     # line 5 CMP file header infromation
 
@@ -622,7 +622,7 @@ class rn_binary(binary) :
       #}}}}}
 
   def set_t( self ) : #{{{{{
-    self.t = np.arange( 0., self.nt, dtype=np.float) * self.dt + self.ot
+    self.t = np.arange( 0., self.nt, dtype=float) * self.dt + self.ot
   #}}}}}
 
   # nagaoka specific
@@ -631,8 +631,8 @@ class rn_binary(binary) :
     self.cmps   = rn_loc( ncmp )
     self.offsets = rn_loc( noffset )
 
-    self.cmps.z     = np.arange( ncmp, dtype=np.float ) * dcmp + ocmp
-    self.offsets.z  = np.arange( noffset, dtype=np.float ) * doffset + ooffset
+    self.cmps.z     = np.arange( ncmp, dtype=float ) * dcmp + ocmp
+    self.offsets.z  = np.arange( noffset, dtype=float ) * doffset + ooffset
     
     if flagmd == 1 :
       rrz, ssz = np.meshgrid( self.rcvs.md, self.srcs.md )
@@ -641,8 +641,8 @@ class rn_binary(binary) :
     zcmp = ( rrz + ssz ) / 2. 
     zoffset = rrz - ssz
 
-    self.icmp    = np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=np.int )
-    self.ioffset = np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=np.int )
+    self.icmp    = np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=int )
+    self.ioffset = np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=int )
     for isrc in range( self.srcs.n ) :
       for ircv in range( self.rcvs.n ) : 
         self.icmp[ isrc, ircv ] =  np.argmin( np.abs( zcmp[ isrc, ircv ] 
@@ -680,12 +680,12 @@ class rn_binary(binary) :
 
     if self.data.ndim == 2 :
       ntrace = tmp.shape[0]
-      self.data = np.zeros( ( ntrace, nt ), dtype=np.float )
+      self.data = np.zeros( ( ntrace, nt ), dtype=float )
       self.data[ :, :self.nt ] = tmp
     else:
       n0 = tmp.shape[0]
       n1 = tmp.shape[1]
-      self.data = np.zeros( ( n0, n1,  nt ), dtype=np.float )
+      self.data = np.zeros( ( n0, n1,  nt ), dtype=float )
       self.data[ :, :, :self.nt ] = tmp
 
 
@@ -757,7 +757,7 @@ class rn_binary(binary) :
       self.fbreak.time = self.fbreak.time[ ishot, : ]
     except :
       print( 'no fbreak data available' )
-      self.fbreak.time = np.zeros( self.rcvs.n, dtype=np.float )
+      self.fbreak.time = np.zeros( self.rcvs.n, dtype=float )
 
     ibyte  = np.dtype( np.float32 ).itemsize
 
@@ -791,7 +791,7 @@ class rn_binary(binary) :
       self.fbreak.time = self.fbreak.time[ :, ircv ]
     except :
       print( 'no fbreak data available' )
-      self.fbreak.time = np.zeros( self.srcs.n, dtype=np.float )
+      self.fbreak.time = np.zeros( self.srcs.n, dtype=float )
     #}}}}}
 
   def read_data_traces( self, traces, dtype=np.float32 ) : # ircv starts from 0 #{{{{{
@@ -816,7 +816,7 @@ class rn_binary(binary) :
                             )[ traces ]
     except :
       print( 'no fbreak data available' )
-      self.fbreak.time = np.zeros( ntrace, dtype=np.float )
+      self.fbreak.time = np.zeros( ntrace, dtype=float )
     #}}}}}
 
 
@@ -833,7 +833,7 @@ class rn_binary(binary) :
 
  
     ntraces = len( isrcs )
-    self.data = np.zeros( (  ntraces, self.nt ), dtype=np.float )
+    self.data = np.zeros( (  ntraces, self.nt ), dtype=float )
 
     self.zcmp  = self.cmps.z[ self.icmp[ isrcs, ircvs ] ]   
 
@@ -857,7 +857,7 @@ class rn_binary(binary) :
     isrcs, ircvs = np.where( self.icmp == icmp ) 
   
     ntraces = len( isrcs )
-    self.data = np.zeros( (  ntraces, self.nt ), dtype=np.float )
+    self.data = np.zeros( (  ntraces, self.nt ), dtype=float )
 
     self.zoffset  = self.offsets.z[ self.ioffset[ isrcs, ircvs ] ]   
 
@@ -879,7 +879,7 @@ class rn_binary(binary) :
 
 
   def read_data_samelevel( self ) :
-    ircvs = np.zeros( self.srcs.n, dtype=np.int )
+    ircvs = np.zeros( self.srcs.n, dtype=int )
 
     for isrc, zsrc in enumerate( self.srcs.z ) : 
       ircvs[ isrc ] = np.argmin( np.abs( self.rcvs.z - zsrc ) )
@@ -898,7 +898,7 @@ class rn_binary(binary) :
       self.fbinh.seek( 4 * ( self.rcvs.n - ircvs[isrc] - 1 ) * self.nt,
                       os.SEEK_CUR )
   def read_data_samelevel_angle( self, angles ) :
-    ircvs = np.zeros( self.srcs.n, dtype=np.int )
+    ircvs = np.zeros( self.srcs.n, dtype=int )
     for isrc, zsrc in enumerate( self.srcs.z ) : 
       zrcvs_possible = zsrc + ( np.tan( angles[ isrc ] ) 
                               * ( self.rcvs.x - self.srcs.x[ isrc ] ) )
@@ -941,7 +941,7 @@ class rn_binary(binary) :
 
   def write_data( self ) : #{{{{{
 
-    self.data.astype('float32').tofile( os.path.join( self.fdir, self.fbin ))   
+    self.data.astype('np.float32').tofile( os.path.join( self.fdir, self.fbin ))   
 
   # }}}}}
 
@@ -1043,8 +1043,8 @@ class cbinary( binary ) :
               self.fdir, self.fheader ) )
 
     self.ircvs, self.isrcs = np.meshgrid( 
-                              np.arange( self.rcvs.n, dtype=np.int ),
-                              np.arange( self.srcs.n, dtype=np.int ) )
+                              np.arange( self.rcvs.n, dtype=int ),
+                              np.arange( self.srcs.n, dtype=int ) )
 
     # line 4 fbreak information ( optional ) ....
     self.fbreak = rn_fbreak()
@@ -1055,7 +1055,7 @@ class cbinary( binary ) :
     except :
       self.fbreak.fname = None
       self.fbreak.time = np.ma.masked_equal( 
-                      np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=np.float ), 
+                      np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=float ), 
                       0.0 ) 
     # line 5 CMP file header infromation
 

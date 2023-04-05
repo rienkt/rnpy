@@ -65,7 +65,7 @@ def find_nearest_value( array, vals ) :
   if type(vals) is np.ndarray :
     vals, nshape = dim_to1D( vals ) 
     nval = vals.shape[0]
-    idxs = np.zeros( nval, dtype=np.int )
+    idxs = np.zeros( nval, dtype=int )
     for ival, val in enumerate( vals ) :
       idxs[ival] = np.argmin( np.abs( array-val ) )
     return array[idxs].reshape( nshape ), idxs.reshape( nshape )
@@ -79,10 +79,10 @@ def find_nearest_value_regular( array, vals ) :
   d = array[1]-array[0]
 
   if type(vals) is np.ndarray :
-    idxs = np.round( ( vals-o ) /d ).astype( np.int )
+    idxs = np.round( ( vals-o ) /d ).astype( int )
     idxs[ idxs<0 ]  =0
     return  idxs*d + o, idxs
   else :
     val = vals
-    idx = np.round( ( val-o ) / d ).astype( np.int )
+    idx = np.round( ( val-o ) / d ).astype( int )
     return idx*d + o, idx

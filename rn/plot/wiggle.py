@@ -54,7 +54,7 @@ def wiggle( ax, datain, xax, yax, wiggle_scale=1., direction='v', fill='y' ):
   vals = data.ravel() #flat view of the 2d array.
 
   # flat index array, for correctly location zero crossing in the flat view
-  vect = np.arange(vals.size).astype(np.float) 
+  vect = np.arange(vals.size).astype(float) 
 
   # index before zero crossing
   crossing = np.where(np.diff(np.signbit(vals)))[0] 
@@ -133,7 +133,7 @@ def wiggle_simple( ax, din, x, y,
   #print( 'scale', scale, 'n0', n0 )
 
   if direction == 'h' :
-    shift = np.arange( 0, n0, dtype=np.float ) * dy
+    shift = np.arange( 0, n0, dtype=float ) * dy
     for i0 in range( n0 ) :
       ax.plot( x, din[ i0, : ] * scale + shift[ i0 ],  
           linewidth=linewidth, linestyle=linestyles[i0],
@@ -141,7 +141,7 @@ def wiggle_simple( ax, din, x, y,
           alpha = linealphas[i0] )
 
   else :
-    shift = np.arange( 0, n0, dtype=np.float ) * dx
+    shift = np.arange( 0, n0, dtype=float ) * dx
     for i0 in range( n0 ) :
       ax.plot( din[ i0, : ] * scale + shift[ i0 ], y, color=linecolors[i0] )
 
