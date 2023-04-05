@@ -110,8 +110,8 @@ class Model:
     #output.close()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.z = np.arange( 0, self.nz, dtype=float ) * self.dz + self.oz
 
   def norm( self ):
     norm = np.dot( self.d.reshape( ( self.nx * self.nz, 1 ) )
@@ -229,8 +229,8 @@ class FreqDomainModelSnap :
     output.close()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.z = np.arange( 0, self.nz, dtype=float ) * self.dz + self.oz
 
 
   def m2km( self ) :
@@ -319,9 +319,9 @@ class TimeDomainModelSnap :
     output.close()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
-    self.t = np.arange( 0, self.nt, dtype=np.float ) * self.dt + self.ot
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.z = np.arange( 0, self.nz, dtype=float ) * self.dz + self.oz
+    self.t = np.arange( 0, self.nt, dtype=float ) * self.dt + self.ot
 
      
 
@@ -417,9 +417,9 @@ class MCTimeDomainModelSnap :
     #output.close()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
-    self.t = np.arange( 0, self.nt, dtype=np.float ) * self.dt + self.ot
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.z = np.arange( 0, self.nz, dtype=float ) * self.dz + self.oz
+    self.t = np.arange( 0, self.nt, dtype=float ) * self.dt + self.ot
 
      
 

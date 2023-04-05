@@ -133,7 +133,7 @@ class Model:
       fbin = f
     self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.int32 
-                  ).reshape( self.nz, self.nx ), -9999. ).T.astype( np.float )
+                  ).reshape( self.nz, self.nx ), -9999. ).T.astype( float )
     self.data = self.d
 
   def read( self, fheader=None, vmin=-9999. ):
@@ -198,8 +198,8 @@ class Model:
     self.write_data()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.z = np.arange( 0, self.nz, dtype=float ) * self.dz + self.oz
 
   def norm( self ):
     norm = np.dot( self.d.reshape( ( self.nx * self.nz, 1 ) )
@@ -350,8 +350,8 @@ class Modelxy:
     self.write_data()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.y = np.arange( 0, self.ny, dtype=np.float ) * self.dy + self.oy
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.y = np.arange( 0, self.ny, dtype=float ) * self.dy + self.oy
 
 
   def extract( self, ix0, ix1, iy0, iy1 ) :
@@ -450,7 +450,7 @@ class Model3d:
     fbin = os.path.join( self.fdir, self.fbin )
     self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.int32 
-                  ).reshape( self.nz, self.ny, self.nx ), -9999. ).astype( np.float )
+                  ).reshape( self.nz, self.ny, self.nx ), -9999. ).astype( float )
     self.d = self.d.transpose( 2,1,0)
     self.data = self.d
 
@@ -518,9 +518,9 @@ class Model3d:
     self.write_data()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.y = np.arange( 0, self.ny, dtype=np.float ) * self.dy + self.oy
-    self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.y = np.arange( 0, self.ny, dtype=float ) * self.dy + self.oy
+    self.z = np.arange( 0, self.nz, dtype=float ) * self.dz + self.oz
 
   def norm( self ):
    self.ntrace = self.nx * self.ny * self.nz

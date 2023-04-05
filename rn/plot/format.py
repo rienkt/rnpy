@@ -30,21 +30,21 @@ def calc_figsize_widths_heights( fig_paperwidth, width_ratios, height_ratios,
   nfig_hor = len( width_ratios )
   nfig_ver = len( height_ratios )
 
-  width_ratios = np.asarray( width_ratios, dtype=np.float )
-  height_ratios = np.asarray( height_ratios, dtype=np.float )
+  width_ratios = np.asarray( width_ratios, dtype=float )
+  height_ratios = np.asarray( height_ratios, dtype=float )
   if dwidths is None :
-    dwidths = np.ones( nfig_hor -1 , dtype=np.float ) * dwidth
+    dwidths = np.ones( nfig_hor -1 , dtype=float ) * dwidth
   else :
-    dwidths = np.asarray( dwidths, dtype=np.float )
+    dwidths = np.asarray( dwidths, dtype=float )
   #print( nfig_hor, dwidths )
 
   widths = ( ( 1. - left - right - np.sum(dwidths) ) *
              width_ratios / np.sum( width_ratios ) )
   if dheights is None :
-    dheights = np.ones( nfig_ver - 1, dtype=np.float ) * dheight
+    dheights = np.ones( nfig_ver - 1, dtype=float ) * dheight
     #print( nfig_ver, dheights )
   else :
-    dheights = np.asarray( dheights, dtype=np.float )
+    dheights = np.asarray( dheights, dtype=float )
     #heights = ( ( 1. - top - bottom - dheight*float( nfig_ver -1) ) *
     #           height_ratios / np.sum( height_ratios ) )
   heights = ( ( 1. - top - bottom - np.sum(dheights) ) *
@@ -181,11 +181,11 @@ def create_axes( fig, widths, heights,  left,  bottom,  dwidth, dheight, dwidths
   #print( nhor, nver )
   #print( dheights )
 
-  lefts = np.zeros( nhor, dtype=np.float )
+  lefts = np.zeros( nhor, dtype=float )
   lefts[0]  = left 
   lefts[1:] = np.cumsum(  widths )[:-1] + np.cumsum( dwidths ) + left 
 
-  bottoms = np.zeros( nver, dtype=np.float )
+  bottoms = np.zeros( nver, dtype=float )
   bottoms[0] = bottom
   bottoms[1:] = ( np.cumsum( np.flipud( heights )  )[:-1] 
                  + np.cumsum( np.flipud( dheights ) ) +  bottom )
@@ -216,7 +216,8 @@ def create_axes( fig, widths, heights,  left,  bottom,  dwidth, dheight, dwidths
 
 def remove_axlabels( axs, 
                     xh0=None, xh1=None, xv0=None, xv1=None,
-                    yh0=None, yh1=None, yv0=None, yv1=None ) :
+                    yh0=None, yh1=None, yv0=None, yv1=None,
+                    xaxis = True, yaxis=True ) :
   nv = len( axs )
   try :
     nh = len( axs[0] )
@@ -240,17 +241,19 @@ def remove_axlabels( axs,
   if yv1 is None :
     yv1 = nv 
   # remove xs
-  for iv in range( xv0, xv1 ) :
-    for ih in range( xh0, xh1 ) :
-      ax = axs[ iv ][ ih ]
-      ax.set_xlabel( '' )
-      ax.set_xticklabels( [  ] )
+  if xaxis  :
+    for iv in range( xv0, xv1 ) :
+      for ih in range( xh0, xh1 ) :
+        ax = axs[ iv ][ ih ]
+        ax.set_xlabel( '' )
+        ax.set_xticklabels( [  ] )
 
-  for iv in range( yv0, yv1 ) :
-    for ih in range( yh0, yh1 ) :
-      ax = axs[ iv ][ ih ]
-      ax.set_ylabel( '' )
-      ax.set_yticklabels( [ ] )
+  if yaxis :
+    for iv in range( yv0, yv1 ) :
+      for ih in range( yh0, yh1 ) :
+        ax = axs[ iv ][ ih ]
+        ax.set_ylabel( '' )
+        ax.set_yticklabels( [ ] )
 def merge_axes( ax0, ax1, flag='v' ) :
   #{{{{{
   # merge two axis in certain directions
@@ -270,8 +273,8 @@ class FigFormat :
 #{{{{{
   def __init__( self, figsize=None, widths=None, heights=None, paperwidth=None,
                 width_ratios=None, height_ratios=None, left=None, right=None,
-                top=None, bottom=None, dwidth=None, dheight=None, 
-                aspect=None ) :
+                top=None, bottom=None, dwidths=None, dwidth=None, dheight=None, 
+                dheights=None, aspect=None ) :
     self.figsize = figsize
     self.widths  = widths
     self.heights = heights 
@@ -283,16 +286,20 @@ class FigFormat :
     self.bottom = bottom
     self.top = top
     self.dwidth = dwidth
+    self.dwidths = dwidths
     self.dheight = dheight
+    self.dheights = dheights
     self.aspect = aspect
   def calc_figsize_widths_heights( self ) :
     self.figsize, self.widths, self.heights = calc_figsize_widths_heights( 
         self.paperwidth, self.width_ratios, 
         self.height_ratios, self.left, self.right, self.bottom, self.top,
-        self.dwidth, self.dheight, self.aspect )
+        self.dwidth, self.dheight, self.aspect , dwidths=self.dwidths, 
+        dheights=self.dheights)
   def create_axes( self, fig ) :
     axs, caxs = create_axes( fig, self.widths, self.heights, self.left, 
-        self.bottom, self.dwidth, self.dheight )
+        self.bottom, self.dwidth, self.dheight, dwidths=self.dwidths, 
+        dheights=self.dheights )
     return axs, caxs
 
   def calc_aspect_from_axis_range( self, axfmt ) :
@@ -310,12 +317,25 @@ class AxesFormat :
                 flag_xminor=0, flag_yminor=0,
                 xticklabels=None, yticklabels=None,
                 xaxis_loc='top', yaxis_loc='left',
-                title=None, subtitle=None, subtitle_position=None,
+                title=None, 
+                subtitle=None, subtitle_position=None,
                 subtitle_dir='h', 
                 subtitle_halign='center', subtitle_valign='center',
                 subtitle_fontsize=12, subtitle_fontweight='bold',
                 subtitle_color = 'k', 
                 subtitle_bbox_alpha = 0,
+                subtitle2=None, subtitle2_position=[0.5,0.5],
+                subtitle2_dir='h', 
+                subtitle2_halign='center', subtitle2_valign='center',
+                subtitle2_fontsize=12, subtitle2_fontweight='bold',
+                subtitle2_color = 'k', 
+                subtitle2_bbox_alpha = 0,
+                subtitle3=None, subtitle3_position=None,
+                subtitle3_dir='h', 
+                subtitle3_halign='center', subtitle3_valign='center',
+                subtitle3_fontsize=12, subtitle3_fontweight='bold',
+                subtitle3_color = 'k', 
+                subtitle3_bbox_alpha = 0,
                 xgrid=True, ygrid=True,
                 grid_linewidth=1, grid_linestyle=':',
                 fontsize=14,
@@ -344,6 +364,16 @@ class AxesFormat :
     self.yaxis_loc = yaxis_loc
     
     self.title  = title
+    self.subtitle2 = subtitle2
+    self.subtitle2_position = subtitle2_position
+    self.subtitle2_dir = subtitle2_dir
+    self.subtitle2_halign= subtitle2_halign
+    self.subtitle2_valign= subtitle2_valign
+    self.subtitle2_bbox_alpha = subtitle2_bbox_alpha
+    self.subtitle2_fontsize = subtitle2_fontsize
+    self.subtitle2_fontweight = subtitle2_fontweight
+    self.subtitle2_color = subtitle2_color
+    
     self.subtitle = subtitle
     self.subtitle_position = subtitle_position
     self.subtitle_dir = subtitle_dir
@@ -353,16 +383,16 @@ class AxesFormat :
     self.subtitle_fontsize = subtitle_fontsize
     self.subtitle_fontweight = subtitle_fontweight
     self.subtitle_color = subtitle_color
-    
-    self.subtitle2 = None
-    self.subtitle2_position = [ -0.1, 0.5 ]
-    self.subtitle2_dir = 'h'
-    self.subtitle2_halign='center'
-    self.subtitle2_valign='center'
-    self.subtitle2_alpha=0.5
-    self.subtitle2_fontweight = 'bold'
 
-
+    self.subtitle3 = subtitle3
+    self.subtitle3_position = subtitle3_position
+    self.subtitle3_dir = subtitle3_dir
+    self.subtitle3_halign= subtitle3_halign
+    self.subtitle3_valign= subtitle3_valign
+    self.subtitle3_bbox_alpha = subtitle3_bbox_alpha
+    self.subtitle3_fontsize = subtitle3_fontsize
+    self.subtitle3_fontweight = subtitle3_fontweight
+    self.subtitle3_color = subtitle3_color
   
     self.ygrid = ygrid
     self.xgrid = xgrid
@@ -482,7 +512,7 @@ class AxesFormat :
 
       #print( self.subtitle_fontsize )
       if self.subtitle_fontsize is None :
-        self.subtitle_fontsize = self.fontsize+2
+        self.subtitle_fontsize = self.fontsize
       
       #print( self.subtitle_fontsize )
 
@@ -506,14 +536,31 @@ class AxesFormat :
           rotation = 0
 
       self.ax_subtitle2 = ax.text( -0.1, 0.5, self.subtitle2, 
-               fontsize=self.fontsize+2, fontweight='bold',
-               bbox=dict(facecolor='w', alpha=self.subtitle2_alpha, linewidth=0),
+               fontsize=self.subtitle2_fontsize, 
+               fontweight=self.subtitle2_fontweight,
+               bbox=dict(facecolor='w', alpha=self.subtitle2_bbox_alpha, linewidth=0),
                horizontalalignment=self.subtitle2_halign, 
                verticalalignment=self.subtitle2_valign,
                transform=ax.transAxes, 
                rotation=rotation )
       self.ax_subtitle2.set_position( self.subtitle2_position )
 
+    if self.subtitle3 :
+
+      if self.subtitle3_dir == 'v'  :
+          rotation = 90
+      else :
+          rotation = 0
+
+      self.ax_subtitle3 = ax.text( -0.1, 0.5, self.subtitle3, 
+               fontsize=self.subtitle3_fontsize, 
+               fontweight=self.subtitle3_fontweight,
+               bbox=dict(facecolor='w', alpha=self.subtitle3_bbox_alpha, linewidth=0),
+               horizontalalignment=self.subtitle3_halign, 
+               verticalalignment=self.subtitle3_valign,
+               transform=ax.transAxes, 
+               rotation=rotation )
+      self.ax_subtitle3.set_position( self.subtitle3_position )
 
 
 #}}}}}

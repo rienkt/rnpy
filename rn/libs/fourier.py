@@ -111,7 +111,7 @@ def amp_spectra( d, dt ) :
     
   nt = d.shape[-1]
 
-  f = np.arange( 0, nt/2+1, dtype=np.float )  / dt / float( nt )
+  f = np.arange( 0, nt/2+1, dtype=float )  / dt / float( nt )
 
   fd = np.abs( np.fft.rfft( d, axis = -1 ) )
 
@@ -131,7 +131,7 @@ def todB( fd ) :
 def phase_spectra( d, dt ) :
   nt = d.shape[-1]
 
-  f = np.arange( 0, nt/2+1, dtype=np.float )  / dt / float( nt )
+  f = np.arange( 0, nt/2+1, dtype=float )  / dt / float( nt )
 
   fd = np.angle( np.fft.rfft( d, axis = -1 ) )
     
@@ -185,11 +185,18 @@ def hanning_taper( din, ntaper ) :
 
     if din.ndim == 1 :
       dout = din * ftaper
-    else :
+    elif din.ndim == 2 :
       ntrace = din.shape[0]
       dout = np.zeros( din.shape, dtype=din.dtype )
       for itrace in range(ntrace) :
           dout[ itrace, : ] = din[ itrace, : ] * ftaper
+    else :
+      n0 = din.shape[0]
+      n1 = din.shape[1]
+      dout = np.zeros( din.shape, dtype=din.dtype )
+      for i0 in range( n0 ) :
+        for i1 in range(n1 ) :
+          dout[ i0, i1, : ] = din[ i0, i1, : ] * ftaper
     return dout
 
 #=============================================================
@@ -262,17 +269,21 @@ def butter_bandpass( lowcut=None, highcut=None, fs=None, order=5 ) :
 def butter_bandpass_filter( data, lowcut=None, highcut=None, fs=None, 
                             order=5, pad=0.1, causal='n' ) :
 
+  nshape_in = data.shape
   if data.ndim == 1 :
     data = data.reshape( ( 1, data.shape[-1] ) )
+  if data.ndim == 3 :
+    data = data.reshape( nshape_in[0]*nshape_in[1], nshape_in[2] )
 
   n0, n1 = data.shape
+  print( n0, n1 )
   #print n0, n1
 
   n1pad = n1 + int( float( n1 ) * pad )
 
   b, a = butter_bandpass( lowcut, highcut, fs, order=order )
 
-  y = np.zeros( ( n0, n1 ), dtype=np.float )
+  y = np.zeros( ( n0, n1 ), dtype=float )
   xpad = np.zeros( ( n1pad - n1 ) ) 
 
 
@@ -286,9 +297,9 @@ def butter_bandpass_filter( data, lowcut=None, highcut=None, fs=None,
       y[ i, : ]  = signal.filtfilt( b, a, np.hstack( ( data[ i, :], xpad ) ),
                             axis=-1 )[ : n1 ] 
 
-  #print( y )
 
-  return y
+
+  return y.reshape( nshape_in )
 
 def butter_bandpass_filter_inplace( data, lowcut=None, highcut=None, 
                 fs=None, order=6 ) :

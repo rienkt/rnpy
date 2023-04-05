@@ -38,7 +38,7 @@ from rn.rsf.utils import get_dim
 #=============================================================================
 # define useful functions
 def set_t( ot, dt, nt ) :
-  return np.arange( 0, nt , dtype=np.float) * dt + ot
+  return np.arange( 0, nt , dtype=float) * dt + ot
 
 
 
@@ -142,13 +142,12 @@ class TimeDomainDataMod:
   def read_rsf( self, input=None, f=None ) :
 
     self.read( input=input, f=f )
-
   def read(self, input=None, f=None, fsrc=None, frcv=None):
     if input is None :
       input = rsf.Input( f )
     self.read_header( input, fsrc=fsrc, frcv=frcv )
-    self.d=np.zeros((self.nsrc,self.nt,self.nrcv),'f')
-    input.read(self.d)
+    self.d = np.zeros( (self.nsrc,self.nt,self.nrcv), np.float32 )
+    input.read( self.d ) 
     input.close()
 
   def write_rsf(self,output=None, f=None):
