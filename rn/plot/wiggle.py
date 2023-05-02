@@ -148,6 +148,52 @@ def wiggle_simple( ax, din, x, y,
 
 
 
+def wiggle_simple_irregular( ax, din, x, y, 
+      wiggle_scale=1., direction='v', norm='y', linewidth=0.5,   
+      linecolors='k', linealphas=1.0 ) :
+
+
+
+  n0, n1 = din.shape
+
+  dx = x[1] - x[0]
+  dy = y[1] - y[0]
+
+  if linecolors is None :
+    linecolors =[ 'k' for i in range(n0) ] 
+  elif type(linecolors) == str :
+    lcolor = linecolors
+    linecolors = [ lcolor for i in range(n0) ]
+#
+  if linealphas is None :
+    linealphas =[ 'k' for i in range(n0) ] 
+  elif ( type(linealphas) == float ) or (type(linealphas) == int )  :
+    lalpha = linealphas
+    linealphas = [ lalpha for i in range(n0) ]
+
+  #print( linecolors )
+
+  if norm == 'y' :
+    scale = wiggle_scale / np.max( np.abs( din ) )
+  else :
+    scale = wiggle_scale
+  #print( 'scale', scale, 'n0', n0 )
+
+  if direction == 'h' :
+    shift = x 
+    for i0 in range( n0 ) :
+      ax.plot( y, din[ i0, : ] * scale + shift[ i0 ], 
+          linewidth=linewidth, color=linecolors[i0], alpha=linealphas[i0])
+      
+
+  else :
+    shift = np.arange( 0, n0, dtype=np.float ) * dx
+    for i0 in range( n0 ) :
+      ax.plot( din[ i0, : ] * scale + shift[ i0 ], y, color=linecolors[i0],
+                alpha=linealphas[i0] )
+
+
+
 
 
 

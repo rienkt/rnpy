@@ -28,7 +28,7 @@ import copy
 
 # Import math packages
 import numpy as np
-import scipy as sp
+#import scipy as sp
 from math import sqrt
 
 
@@ -50,7 +50,8 @@ class Model:
 #{{{{{
   def __init__(self, ref=None, 
                      oz=0., dz=1., nz=1,
-                     ox=0., dx=1., nx=1, val=0.):
+                     ox=0., dx=1., nx=1, val=0.,
+                     flag_initialize = True):
     if ref :
       self.nx = ref.nx
       self.ox = ref.ox
@@ -74,7 +75,9 @@ class Model:
       self.nz = nz
       self.oz = oz
       self.dz = dz
-    self.initialize( val=val )
+
+    if flag_initialize == True :
+      self.initialize( val=val )
 
     self.set_axis()
 
@@ -364,6 +367,7 @@ class Modelxy:
 
 
 class Model3d:
+#{{{{{
   def __init__(self, ref=None, 
                      oz=0., dz=1., nz=1,
                      oy=0., dy=1., ny=1,
@@ -531,10 +535,198 @@ class Model3d:
    norm = sqrt( norm )
    return norm
      
+#}}}}}
+
+class Modelxyt:
+#{{{{{
+  def __init__(self, ref=None, 
+                     ot=0., dt=1., nt=1,
+                     oy=0., dy=1., ny=1,
+                     ox=0., dx=1., nx=1, val=0.,
+                     flag_initialize = True ):
+    if ref :
+      self.nx = ref.nx
+      self.ox = ref.ox
+      self.dx = ref.dx
+      self.nt = ref.nt
+      self.ot = ref.ot
+      self.dt = ref.dt
+      self.ny = ref.ny
+      self.oy = ref.oy
+      self.dy = ref.dy
+      self.fdir = ref.fdir
+      self.fheader = ref.fheader
+    else :
+
+      self.nx = nx
+      self.ox = ox
+      self.dx = dx
+      self.nt = nt
+      self.ot = ot
+      self.dt = dt
+      self.ny = ny
+      self.oy = oy
+      self.dy = dy
+    if flag_initialize :
+      self.initialize( val=val )
+
+    self.set_axis()
+
+
+    self.fbin    = 'test.bin'
+    self.fheader = 'test.header'
+
+
+  def initialize( self, val=0.0 ):
+    self.d = np.ones( ( self.nx, self.ny, self.nt ), np.float32 
+                       ) * val
+    self.data =self.d
+
+  def initialise( self, val=0.0 ):
+    self.initialize( 0.0 )
+
+  def set_fname( self, fname ) :
+    self.fdir = os.path.dirname( fname )
+    self.fheader = os.path.basename( fname )
+
+  def read_header( self, fheader=None, dtype=np.float32 ) :
+    if fheader :
+      self.fheadeer = fheader
+
+    self.set_fname( fheader )
+    
+    lines = read_from_textfile( os.path.join( self.fdir, self.fheader ) ) 
+
+    # read x-coordinate
+    iline = 0 
+    ox, dx, nx = lines[ iline ].split()
+    self.ox = float(ox) ; self.dx = float(dx); self.nx = int(nx)
+    iline += 1
+    oy, dy, ny = lines[ iline ].split()
+    self.oy = float(oy) ; self.dy = float(dy); self.ny = int(ny)
+
+    iline += 1
+    ot, dt, nt = lines[ iline ].split()
+    self.ot = float(ot) ; self.dt = float(dt); self.nt = int(nt)
+
+    iline += 1
+    self.fbin = lines[ iline ]
+
+    self.set_axis()
+
+    self.dtype = dtype
+  
+
+  def open_data( self, op='r' ): #{{{{{
+    self.fbinh = open( os.path.join( self.fdir, self.fbin ), op+'b' )
+
+  def close_data( self ) :
+    self.fbinh.close()
+
+
+  def read_bin( self ) :
+    self.read_data()
+
+  def read_data( self ) :
+    fbin = os.path.join( self.fdir, self.fbin )
+    self.d = np.ma.masked_less_equal( 
+                  np.fromfile( fbin, dtype = self.dtype 
+                  ).reshape( self.nx, self.ny,  self.nt ), -9999. )
+    self.data = self.d
+
+  def read_data_at_x( self, x ) :
+    fbin = os.path.join( self.fdir, self.fbin )
+
+    import rn.libs.array as rn_array
+    x, ix = rn_array.find_nearest_value( self.x, x )
+    ibyte  = np.dtype( self.dtype ).itemsize
+
+    self.d = np.ma.masked_less_equal( 
+                  np.fromfile( fbin, dtype = self.dtype,
+                    count=self.ny*self.nt, 
+                    offset=self.ny*self.nt*ix*ibyte
+                  ).reshape( self.ny,  self.nt ), -9999. )
+
+  def read_data_at_y( self, y ) :
+    fbin = os.path.join( self.fdir, self.fbin )
+
+    import rn.libs.array as rn_array
+    y, iy = rn_array.find_nearest_value( self.y, y )
+    ibyte  = np.dtype( self.dtype ).itemsize
+    self.d = np.zeros( self.nx, self.nt, dtype=self.dtype )
+    if not self.fbinh :
+      self.open_data( op='r' )
+    self.fbinh.seek( ibyte * iy * self.nt, os.SEEK_CUR )
+    for ix in range( self.nx ) :
+      self.d[ ix, : ] = np.fromfile( self.fbinh, dtype=self.dtype,
+                            count = self.nt )
+      self.fbinh.seek( ibyte *  self.ny * self.nt, os.SEEK_CUR )
+
+  def read( self, fheader=None ):
+    self.read_header( fheader )
+    self.read_data()
+
+  def set_default_fnames( self, fhead )  :
+    self.fdir = os.path.dirname( fhead )
+    fh = os.path.basename( fhead )
+
+    self.fheader = fh + '.header' 
+    self.fbin = fh + '.bin' 
+
+
+  def write_header( self, fheader=None, fbin=None) :
+    if fheader :
+      self.fheader = fheader
+      self.set_fname( fheader )
+    if fbin :
+      self.fbin = fbin
+
+
+
+    outlines = []
+    outlines.append( '%f %f %d'%( self.ox, self.dx, self.nx ) )
+    outlines.append( '%f %f %d'%( self.oy, self.dy, self.ny ) )
+    outlines.append( '%f %f %d'%( self.ot, self.dt, self.nt ) )
+    outlines.append( '%s'%self.fbin )
+
+    write_to_textfile( os.path.join( self.fdir, self.fheader ), outlines ) 
+
+  def write_data( self ) :
+    fbin = os.path.join( self.fdir, self.fbin )
+
+    try :
+      self.d.filled( -9999. ).astype( np.float32 ).tofile( fbin )
+    except :
+      self.d.astype( np.float32 ).tofile( fbin )
+
+  def write_data_int( self ) :  
+    fbin = os.path.join( self.fdir, self.fbin )
+
+    self.d = self.d.astype( np.int32 )
+
+    try :
+      self.d.filled( -9999 ).tofile( fbin )
+    except :
+      self.d.tofile( fbin )
+
+
+
+  def write( self, fheader=None, fbin=None ) :
+    self.write_header( fheader, fbin )
+    self.write_data()
+
+  def set_axis( self ) :
+    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
+    self.y = np.arange( 0, self.ny, dtype=np.float ) * self.dy + self.oy
+    self.t = np.arange( 0, self.nt, dtype=np.float ) * self.dt + self.ot
+
+  def norm( self ):
+   self.ntrace = self.nx * self.ny * self.nt
+   norm = np.dot( self.d.reshape( ( self.nx * self.nt, 1 ) )
+                       [ 0:self.ntrace, 0 ], 
+                   self.d.reshape( ( self.nx * self.nt, 1 ) ).T
+                       [ 0, 0 : self.ntrace ] )
+   norm = sqrt( norm )
+   return norm
      
- 
-
-
-
-
-
+#}}}}}

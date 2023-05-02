@@ -85,7 +85,7 @@ def normalize_rms( d, axis=-1, i0=0, i1=None) :
 
   nshape = d.shape
   n1 = d.shape[-1]
-  n0 = d.size /n1 
+  n0 = int( d.size /n1  )
 
   if i1 is None :
     i1 = n1 
@@ -97,12 +97,15 @@ def normalize_rms( d, axis=-1, i0=0, i1=None) :
 
   amax = np.sqrt( np.sum( np.abs(d[:,i0:i1] )**2, axis = -1 ) / (i1-i0) )
 
-  d[idx] = 0.
+  import copy
+  dout = copy.copy( d )
+
+  dout[idx] = 0.
 
   amax[ amax < 1e-28 ] = 1. 
 
   for i0 in range( n0) :
-    d[ i0, : ] = d[ i0, : ] / amax[ i0 ]
+    dout[ i0, : ] = dout[ i0, : ] / amax[ i0 ]
 
   #amax = np.max( np.abs( d[ :, i0:i1] ) )
   #print(amax)
@@ -110,9 +113,9 @@ def normalize_rms( d, axis=-1, i0=0, i1=None) :
   #amax = np.max( np.abs( d[ :, i0:i1]  ) )
     
   if axis >= 0 :
-    return np.swapaxis( d.reshape( nshape ), -1, axis )
+    return np.swapaxis( dout.reshape( nshape ), -1, axis )
   else :
-    return d.reshape( nshape )
+    return dout.reshape( nshape )
 # d
 
 #  amax = np.max( d, axis=axis ) 
