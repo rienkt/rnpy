@@ -17,6 +17,24 @@ except :
   print( 'cartopy is not available' )
   #rcParams['png.fonttype'] = 42
 
+def add_text( ax, x, y, text, fontsize=12, fontweight='regular', 
+              color='k', bbox_alpha=0.5, halign='center',
+              bbox_linewidth=0, bbox_style='square',
+              valign='center' , rotation=0) :
+      position = [ x, y ]
+      ax_subtitle = ax.text( -0.1, 0.5, text, 
+               fontsize=fontsize, 
+               fontweight=fontweight,
+               color = color,
+               bbox=dict( facecolor='w', 
+                          alpha=bbox_alpha, linewidth=bbox_linewidth,
+                          boxstyle=bbox_style),
+               horizontalalignment=halign, 
+               verticalalignment=valign,
+               transform=ax.transAxes, 
+               rotation=rotation )
+      ax_subtitle.set_position( position )
+
 
 def calc_aspect_from_axis_range( ax ) :
   return abs( ax.xmax - ax.xmin) / abs( ax.ymax - ax.ymin )
@@ -217,20 +235,32 @@ def create_axes( fig, widths, heights,  left,  bottom,  dwidth, dheight, dwidths
 def remove_axlabels( axs, 
                     xh0=None, xh1=None, xv0=None, xv1=None,
                     yh0=None, yh1=None, yv0=None, yv1=None,
-                    xaxis = True, yaxis=True ) :
+                    xaxis = True, yaxis=True, axfmt=None, xlabel_loc='top',
+                    ylabel_loc = 'left') :
+  print( axfmt )
   nv = len( axs )
   try :
     nh = len( axs[0] )
   except :
-    nh = 1 
+    nh = 1
+  if axfmt : 
+    xlabel_loc = axfmt.xaxis_loc
+    ylabel_loc = axfmt.yaxis_loc
+
   if xh0 is None :
     xh0 =0 
   if xh1 is None :
     xh1 = nh 
-  if xv0 is None :
-    xv0 =1 
-  if xv1 is None :
-    xv1 = nv 
+  if xlabel_loc == 'top' :
+    if xv0 is None :
+      xv0 =1 
+    if xv1 is None :
+      xv1 = nv 
+  else :
+    if xv0 is None :
+      xv0 = 0
+    if xv1 is None :
+      xv1 = nv -1
 
   if yh0 is None :
     yh0 = 1 
