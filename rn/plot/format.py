@@ -116,6 +116,9 @@ def create_colorbar( fig, axim=None, caxfmt=None,
       impos[0] += left
   else :
     print( dleft, left )
+    impos[3] = height 
+    if dbottom :
+      impos[1] += dbottom
     if dleft is not None:
       impos[0] += ( impos[2] + dleft )
     elif left is not None :
