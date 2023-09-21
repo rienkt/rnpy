@@ -539,17 +539,17 @@ class rn_binary(binary) :
       self.gather = 'all'     
   
     if self.gather == 'all' :
-      self.data = np.ones( ( self.srcs.n, self.rcvs.n, self.nt ), 
+      self.d = np.ones( ( self.srcs.n, self.rcvs.n, self.nt ), 
                              dtype=np.float32 ) * val
 
     elif self.gather == 'shot' :
-      self.data = np.ones( ( self.rcvs.n, self.nt ), dtype=np.float32 ) * val
+      self.d = np.ones( ( self.rcvs.n, self.nt ), dtype=np.float32 ) * val
 
     elif self.gather == 'receiver' :
-      self.data = np.ones( ( self.srcs.n, self.nt ), dtype=np.float32 ) * val
+      self.d = np.ones( ( self.srcs.n, self.nt ), dtype=np.float32 ) * val
 
     else :
-      self.data = np.ones( ( self.srcs.n, self.nt ),
+      self.d = np.ones( ( self.srcs.n, self.nt ),
                              dtype=np.float32 ) * val
   #}}}}}
 
@@ -659,10 +659,10 @@ class rn_binary(binary) :
     itmax = np.argmin( np.abs( self.t - tmax) )
 
 
-    if self.data.ndim == 2 :
-      self.data = self.data[ :, itmin:(itmax+1) ]
+    if self.d.ndim == 2 :
+      self.d = self.d[ :, itmin:(itmax+1) ]
     else:
-      self.data = self.data[ :, :, itmin:(itmax+1) ]
+      self.d = self.d[ :, :, itmin:(itmax+1) ]
 
 
     self.ot = self.t[itmin]
@@ -675,18 +675,18 @@ class rn_binary(binary) :
     
     nt = int( round( ( tmax - self.ot ) / self.dt ) )
 
-    tmp = self.data
+    tmp = self.d
     
 
-    if self.data.ndim == 2 :
+    if self.d.ndim == 2 :
       ntrace = tmp.shape[0]
-      self.data = np.zeros( ( ntrace, nt ), dtype=float )
-      self.data[ :, :self.nt ] = tmp
+      self.d = np.zeros( ( ntrace, nt ), dtype=float )
+      self.d[ :, :self.nt ] = tmp
     else:
       n0 = tmp.shape[0]
       n1 = tmp.shape[1]
-      self.data = np.zeros( ( n0, n1,  nt ), dtype=float )
-      self.data[ :, :, :self.nt ] = tmp
+      self.d = np.zeros( ( n0, n1,  nt ), dtype=float )
+      self.d[ :, :, :self.nt ] = tmp
 
 
     self.nt = nt
@@ -740,7 +740,7 @@ class rn_binary(binary) :
     elif self.gather == 'samelevel' :
       self.read_data_samelevel()
     else :
-      self.data = np.fromfile( os.path.join( self.fdir, self.fbin ), 
+      self.d = np.fromfile( os.path.join( self.fdir, self.fbin ), 
               dtype = dtype ).reshape(self.srcs.n, self.rcvs.n, self.nt)
   #}}}}}
 
@@ -761,10 +761,10 @@ class rn_binary(binary) :
 
     ibyte  = np.dtype( np.float32 ).itemsize
 
-    self.data = np.zeros( ( self.rcvs.n, self.nt ), dtype=dtype  )
+    self.d = np.zeros( ( self.rcvs.n, self.nt ), dtype=dtype  )
 
     self.fbinh.seek( ibyte * ishot * self.nt * self.rcvs.n, os.SEEK_SET ) 
-    self.data[ :, : ] = np.fromfile( self.fbinh, dtype = dtype, 
+    self.d[ :, : ] = np.fromfile( self.fbinh, dtype = dtype, 
                              count= self.nt * self.rcvs.n 
                             ).reshape( self.rcvs.n, self.nt )
     #}}}}} 
@@ -776,13 +776,13 @@ class rn_binary(binary) :
     ibyte  = np.dtype( dtype ).itemsize
     if self.sort == 'receiver' :
       self.fbinh.seek( ibyte * ircv * self.nt * self.srcs.n, os.SEEK_SET ) 
-      self.data[ :, : ] = np.fromfile( self.fbinh, dtype = dtype,  
+      self.d[ :, : ] = np.fromfile( self.fbinh, dtype = dtype,  
                                count= self.nt * self.srcs.n 
                               ).reshape( self.srcs.n, self.nt )
     else :
       self.fbinh.seek( ibyte * ircv * self.nt, os.SEEK_SET )
       for isrc in range( self.srcs.n ) :
-        self.data[ isrc, : ] = np.fromfile( self.fbinh, dtype = dtype,
+        self.d[ isrc, : ] = np.fromfile( self.fbinh, dtype = dtype,
                                count= self.nt )
         #print isrc, self.fbinh.tell()
         self.fbinh.seek( ibyte * ( self.rcvs.n -1 ) * self.nt, os.SEEK_CUR )
@@ -801,14 +801,14 @@ class rn_binary(binary) :
     ntrace = len( traces )
     ibyte  = np.dtype( dtype ).itemsize
 
-    self.data = np.zeros( ( ntrace, self.nt ), dtype=dtype )
-    print( self.data.shape )
+    self.d = np.zeros( ( ntrace, self.nt ), dtype=dtype )
+    print( self.d.shape )
 
     for itrace in range( ntrace ) :
       traceno = traces[itrace]
       print( itrace, traceno)
       self.fbinh.seek( ibyte*traceno*self.nt, os.SEEK_SET )
-      self.data[ itrace, : ] = np.fromfile( self.fbinh, dtype=dtype,
+      self.d[ itrace, : ] = np.fromfile( self.fbinh, dtype=dtype,
                                 count = self.nt )
 
     try :
@@ -833,7 +833,7 @@ class rn_binary(binary) :
 
  
     ntraces = len( isrcs )
-    self.data = np.zeros( (  ntraces, self.nt ), dtype=float )
+    self.d = np.zeros( (  ntraces, self.nt ), dtype=float )
 
     self.zcmp  = self.cmps.z[ self.icmp[ isrcs, ircvs ] ]   
 
@@ -846,7 +846,7 @@ class rn_binary(binary) :
     for idx in range( ntraces ) :
       itrace = isrcs[ idx ] * self.rcvs.n + ircvs[ idx ] 
       self.fbinh.seek( 4 * itrace * self.nt , os.SEEK_SET )
-      self.data[ idx, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+      self.d[ idx, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
                              count= self.nt )
 
   def read_data_cmp( self, icmp=0 ) :
@@ -857,7 +857,7 @@ class rn_binary(binary) :
     isrcs, ircvs = np.where( self.icmp == icmp ) 
   
     ntraces = len( isrcs )
-    self.data = np.zeros( (  ntraces, self.nt ), dtype=float )
+    self.d = np.zeros( (  ntraces, self.nt ), dtype=float )
 
     self.zoffset  = self.offsets.z[ self.ioffset[ isrcs, ircvs ] ]   
 
@@ -870,7 +870,7 @@ class rn_binary(binary) :
     for idx in range( ntraces ) :
       itrace = isrcs[ idx ] * self.rcvs.n + ircvs[ idx ] 
       self.fbinh.seek( 4 * itrace * self.nt , os.SEEK_SET )
-      self.data[ idx, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+      self.d[ idx, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
                              count= self.nt )
 
  
@@ -893,7 +893,7 @@ class rn_binary(binary) :
       #print isrc, ircvs[isrc]
       self.fbinh.seek( 4 * ircvs[ isrc ] * self.nt, os.SEEK_CUR )
 
-      self.data[ isrc, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+      self.d[ isrc, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
                              count= self.nt )
       self.fbinh.seek( 4 * ( self.rcvs.n - ircvs[isrc] - 1 ) * self.nt,
                       os.SEEK_CUR )
@@ -909,7 +909,7 @@ class rn_binary(binary) :
       #print isrc, ircvs[isrc]
       self.fbinh.seek( 4 * ircvs[ isrc ] * self.nt, os.SEEK_CUR )
 
-      self.data[ isrc, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+      self.d[ isrc, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
                              count= self.nt )
       self.fbinh.seek( 4 * ( self.rcvs.n - ircvs[isrc] - 1 ) * self.nt,
                       os.SEEK_CUR )
@@ -925,7 +925,7 @@ class rn_binary(binary) :
     if not self.fbinh :
       self.open_data( op='w' )
     self.fbinh.seek( 4 * ich * self.nsamples, os.SEEK_SET ) 
-    self.data.astype( np.float32).tofile( self.fbinh )
+    self.d.astype( np.float32).tofile( self.fbinh )
 
   def close_data( self ) :
     self.fbinh.close()
@@ -934,14 +934,14 @@ class rn_binary(binary) :
   def write_data_append( self ) : #{{{{{
     if not self.fbinh :
       self.open_data() 
-    self.data.astype( np.float32 ).tofile( self.fbinh )
+    self.d.astype( np.float32 ).tofile( self.fbinh )
 
   #}}}}}
 
 
   def write_data( self ) : #{{{{{
 
-    self.data.astype('np.float32').tofile( os.path.join( self.fdir, self.fbin ))   
+    self.d.astype(np.float32).tofile( os.path.join( self.fdir, self.fbin ))   
 
   # }}}}}
 
@@ -953,7 +953,7 @@ class rn_binary(binary) :
   #}}}}}
 
   def set_rms( self ) : #{{{{{
-    self.rms = np.sum( self.data**2, axis=-1 ) / self.nt
+    self.rms = np.sum( self.d**2, axis=-1 ) / self.nt
   #}}}}}
 
 
@@ -971,7 +971,7 @@ class cbinary( binary ) :
 
     self.nf = self.freqs.n
    
-    self.data = None
+    self.d = None
     self.initialize()
      # }}}}}
 
@@ -982,20 +982,20 @@ class cbinary( binary ) :
       self.gather = 'all'     
   
     if self.gather == 'all' :
-      if type( self.data ) is np.ndarray :
-        self.data[:,:,:] = val
+      if type( self.d ) is np.ndarray :
+        self.d[:,:,:] = val
       else :
-        self.data = np.ones( ( self.srcs.n, self.rcvs.n, self.freqs.n ), 
+        self.d = np.ones( ( self.srcs.n, self.rcvs.n, self.freqs.n ), 
                                dtype=np.complex64 ) * val
 
     elif self.gather == 'shot' :
-      self.data = np.ones( ( self.rcvs.n, self.nf ), dtype=np.complex64 ) * val
+      self.d = np.ones( ( self.rcvs.n, self.nf ), dtype=np.complex64 ) * val
 
     elif self.gather == 'receiver' :
-      self.data = np.ones( ( self.srcs.n, self.nf ), dtype=np.complex64 ) * val
+      self.d = np.ones( ( self.srcs.n, self.nf ), dtype=np.complex64 ) * val
 
     else :
-      self.data = np.ones( ( self.srcs.n, self.nf ),
+      self.d = np.ones( ( self.srcs.n, self.nf ),
                              dtype=np.complex64 ) * val
   #}}}}}
 
@@ -1082,7 +1082,7 @@ class cbinary( binary ) :
     elif self.gather == 'samelevel' :
       self.read_data_samelevel()
     else :
-      self.data = np.fromfile( os.path.join( self.fdir, self.fbin ), 
+      self.d = np.fromfile( os.path.join( self.fdir, self.fbin ), 
               dtype = np.dtype('complex64') 
              ).reshape(self.srcs.n, self.rcvs.n, self.freqs.n)
 
@@ -1123,7 +1123,7 @@ class cbinary( binary ) :
   #}}}}}
 
   def write_data( self ) : #{{{{{
-    self.data.astype('complex64').tofile( os.path.join( self.fdir, self.fbin ))   
+    self.d.astype('complex64').tofile( os.path.join( self.fdir, self.fbin ))   
   #}}}}}
 
   def write( self ) : #{{{{{

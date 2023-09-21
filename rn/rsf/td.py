@@ -118,6 +118,19 @@ class TimeDomainDataMod:
     output.put('o1',self.orcv)
     output.put('o2',self.ot)
     output.put('o3',self.osrc)
+  def write_header_only( self, f=None, fbin=None ) :
+    with open( f, 'w' ) as frsf :
+      frsf.write( 'data_format="native_float"\n' )
+      frsf.write( 'n1=%d\n'%self.nrcv  )
+      frsf.write( 'n2=%d\n'%self.nt )
+      frsf.write( 'n3=%d\n'%self.nsrc )
+      frsf.write( 'o1=%f\n'%self.orcv )
+      frsf.write( 'o2=%f\n'%self.ot )
+      frsf.write( 'o3=%f\n'%self.osrc )
+      frsf.write( 'd1=%f\n'%self.drcv )
+      frsf.write( 'd2=%f\n'%self.dt )
+      frsf.write( 'd3=%f\n'%self.dsrc )
+      frsf.write( 'in=%s\n'%fbin )
 
   def set_t( self ) :
     self.t = set_t( self.ot, self.dt, self.nt ) 
@@ -287,6 +300,20 @@ class TimeDomainData:
     output.put('o3',self.osrc)
     output.write(np.float32(self.d))
     output.close()
+  def write_header_only( self, f=None, fbin=None ) :
+    print( self.dt )
+    with open( f, 'w' ) as frsf :
+      frsf.write( 'data_format="native_float"\n' )
+      frsf.write( 'n1=%d\n'%self.nt )
+      frsf.write( 'n2=%d\n'%self.nrcv )
+      frsf.write( 'n3=%d\n'%self.nsrc )
+      frsf.write( 'o1=%f\n'%self.ot )
+      frsf.write( 'o2=%f\n'%self.orcv )
+      frsf.write( 'o3=%f\n'%self.osrc )
+      frsf.write( 'd1=%f\n'%self.dt )
+      frsf.write( 'd2=%f\n'%self.drcv )
+      frsf.write( 'd3=%f\n'%self.dsrc )
+      frsf.write( 'in=%s\n'%fbin )
   def get_rms(self):
     self.rms=np.sqrt(np.sum(self.d**2)/self.d.size)
   def srt2nt(self):
