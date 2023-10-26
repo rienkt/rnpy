@@ -74,7 +74,7 @@ def remove_dc( din, i0=0, i1=-1 ) :
     din[ i0, : ] -= dmean[ i0 ]
 
   din = np.reshape( din, nshape_in )
-  print( nshape_in, din.shape )
+  #print( nshape_in, din.shape )
 
 
   return din, dmean

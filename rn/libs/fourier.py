@@ -18,7 +18,7 @@ def rfft( din, fft_object=None, t=None, dt=None, axis=-1 ) :
   if axis != -1 :
     din = np.swapaxes( din, -1, axis )
 
-  print( din.shape )
+  #print( din.shape )
 
 
   try :
@@ -47,7 +47,7 @@ def rfft( din, fft_object=None, t=None, dt=None, axis=-1 ) :
     dout = np.swapaxes( dout, -1, axis )
 
 
-  print( dout.shape )
+  #print( dout.shape )
 
   if fft_object :
     return dout, fout
@@ -262,7 +262,7 @@ def butter_bandpass( lowcut=None, highcut=None, fs=None, order=5 ) :
     b, a = signal.butter( order, high,  btype='lowpass') 
   else :
     low = lowcut /nyq
-    print( 'lowcut filter', low )
+    #print( 'lowcut filter', low )
     b, a = signal.butter( order, low,  btype='highpass') 
   return b, a
 
@@ -276,7 +276,7 @@ def butter_bandpass_filter( data, lowcut=None, highcut=None, fs=None,
     data = data.reshape( nshape_in[0]*nshape_in[1], nshape_in[2] )
 
   n0, n1 = data.shape
-  print( n0, n1 )
+  #print( n0, n1 )
   #print n0, n1
 
   n1pad = n1 + int( float( n1 ) * pad )
@@ -333,21 +333,21 @@ def hanning_bandpass_fd( fd, df, lowcut=None, highcut=None, ntaper=None ) :
   ftaper = np.hanning( ntaper * 2 )
   nf =fd.shape[-1]
   if lowcut and highcut :
-    print( 'here' )
+    #print( 'here' )
     f = np.concatenate( ( np.zeros( nlowcut-ntaper, dtype=fd.dtype ),
                       ftaper[ :ntaper ],
                       np.ones( -nlowcut+nhighcut, dtype=fd.dtype ),
                       ftaper[ ntaper: ],
                       np.zeros( nf - nhighcut - ntaper, dtype=fd.dtype ) ) )
-    print( f.shape )
+    #print( f.shape )
   elif not lowcut :
     f = np.concatenate( ( np.ones( nhighcut, dtype=fd.dtype ),
                       ftaper[ ntaper: ],
                       np.zeros( nf - nhighcut-ntaper, dtype=fd.dtype ) ) )
 
   else :
-    print( nf, nlowcut, ntaper, nf-nlowcut, ntaper )
-    print( np.ones( nf-nlowcut-ntaper ) )
+    #print( nf, nlowcut, ntaper, nf-nlowcut, ntaper )
+    #print( np.ones( nf-nlowcut-ntaper ) )
 
     f = np.concatenate( ( np.zeros( nlowcut, dtype=fd.dtype ),
                       ftaper[ :ntaper ],
@@ -377,15 +377,15 @@ def hanning_bandpass_fd_freqs( fd, df, freqs) :
                       np.ones( -nlowcut+nhighcut, dtype=fd.dtype ),
                       ftaper2[ ntaper2: ],
                       np.zeros( nf - nhighcut - ntaper2, dtype=fd.dtype ) ) )
-    print( f.shape )
+    #print( f.shape )
   elif not lowcut :
     f = np.concatenate( ( np.ones( nhighcut, dtype=fd.dtype ),
                       ftaper[ ntaper: ],
                       np.zeros( nf - nhighcut-ntaper, dtype=fd.dtype ) ) )
 
   else :
-    print( nf, nlowcut, ntaper, nf-nlowcut, ntaper )
-    print( np.ones( nf-nlowcut-ntaper ) )
+    ##print( nf, nlowcut, ntaper, nf-nlowcut, ntaper )
+    #print( np.ones( nf-nlowcut-ntaper ) )
 
     f = np.concatenate( ( np.zeros( nlowcut, dtype=fd.dtype ),
                       ftaper[ :ntaper ],
