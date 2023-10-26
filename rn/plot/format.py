@@ -440,7 +440,9 @@ class AxesFormat :
 
   def format_axes( self, ax ) :
 
-
+    ax.tick_params( 
+      bottom=True, top=True, 
+      left=True, right=True )
     if self.xlabel : 
       ax.set_xlabel( self.xlabel, fontsize=self.fontsize )
 
@@ -467,14 +469,14 @@ class AxesFormat :
 
     if type( self.xticks_minor ) is np.ndarray :
       ax.set_xticks( self.xticks_minor, minor=True )
-      self.flag_xminor = 2
+      #self.flag_xminor = 2
 
     if type( self.yticks ) is np.ndarray :
       ax.set_yticks( self.yticks )
 
     if type( self.yticks_minor ) is np.ndarray :
       ax.set_yticks( self.yticks_minor, minor=True )
-      self.flag_yminor = 2
+      #self.flag_yminor = 2
 
     if type( self.cticks ) == np.ndarray :
       ax.set_ticks( self.cticks )

@@ -99,7 +99,7 @@ def time_window_gauss( din, t, ot=0., tsigma=1.0 ) :
 #def rk_time_window( din, top_tshift, top_taper, window_length, bottom_taper ) :
 def time_window_hanning( din, t, tbeg, tend, top_taper, bottom_taper ) :
   if din.ndim == 1 :
-    d = din.reshape( ( 1, din.shape[-1] ) )
+    d = copy.copy(  din.reshape( ( 1, din.shape[-1] ) ) )
   else :
     d = copy.copy( din ) 
   dt = t[1] - t[0]
@@ -127,7 +127,7 @@ def time_window_hanning( din, t, tbeg, tend, top_taper, bottom_taper ) :
   itime_window_0 = ntbeg - top_ntaper
   itime_window_1 = itime_window_0 + ntime_window
 
-  f = np.zeros( nt, dtype=np.float )
+  f = np.zeros( nt, dtype=float )
   f[ itime_window_0 : itime_window_1 ] = time_window_filter
 
 
@@ -171,7 +171,7 @@ def time_window( din, t, fbreak,
 
   ntrace = d.shape[ 0 ] 
   # make arrays longer to avoid the end of window is too long...
-  dtmp = np.concatenate( ( d, np.zeros( ( ntrace, ntime_window ), dtype=np.float ) ), axis=-1 )
+  dtmp = np.concatenate( ( d, np.zeros( ( ntrace, ntime_window ), dtype=float ) ), axis=-1 )
 
   for itrace in range( ntrace ) :
     if fbreak.mask[ itrace ] :

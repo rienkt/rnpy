@@ -31,6 +31,8 @@ import numpy as np
 import scipy as sp
 from math import sqrt
 
+from rn.libs.misc import wprint
+
 
 #======================================================================
 # classes / functions
@@ -120,7 +122,7 @@ class Model:
     self.read_data()
 
   def read_data( self , vmin=-9999., ftype = np.float32) :
-    print( vmin )
+    #print( vmin )
     fbin = os.path.join( self.fdir, self.fbin )
     self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = ftype #np.float32 
@@ -224,8 +226,11 @@ class Modelxy:
       self.ny = ref.ny
       self.oy = ref.oy
       self.dy = ref.dy
-      self.fdir = ref.fdir
-      self.fheader = ref.fheader
+      try :
+        self.fdir = ref.fdir
+        self.fheader = ref.fheader
+      except :
+        print( 'no file information is given during initialization' )
     else :
 
       self.nx = nx
@@ -281,6 +286,7 @@ class Modelxy:
 
   def read_data( self ) :
     fbin = os.path.join( self.fdir, self.fbin )
+    #print( fbin )
     self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.float32 
                  ).reshape( self.nx, self.ny ), -9999. )
@@ -297,7 +303,7 @@ class Modelxy:
 
     self.fheader = fh + '.header' 
     self.fbin = fh + '.bin' 
-    print( self.fbin )
+    #print( self.fbin )
 
 
   def write_header( self, fheader=None, fbin=None) :
@@ -307,18 +313,18 @@ class Modelxy:
     if fbin :
       self.fbin = fbin
 
-
-
+    
     outlines = []
     outlines.append( '%f %f %d'%( self.ox, self.dx, self.nx ) )
     outlines.append( '%f %f %d'%( self.oy, self.dy, self.ny ) )
     outlines.append( '%s'%self.fbin )
+    #print( outlines )
 
     write_to_textfile( os.path.join( self.fdir, self.fheader ), outlines ) 
 
   def write_data( self ) :
     fbin = os.path.join( self.fdir, self.fbin )
-
+    print( self.d[100,100] )
     try :
       self.d.filled( -9999. ).astype( np.float32 ).tofile( fbin )
     except :
@@ -358,6 +364,8 @@ class Modelxy:
     m = Modelxy( dx=self.dx, dy=self.dy, nx=ix1-ix0, ny=iy1-iy0,
                 ox=self.x[ix0], oy=self.y[iy0] )
     m.d = self.d[ ix0:ix1, iy0:iy1 ]
+    m.ox = self.x[ix0]
+    m.oy = self.y[iy0]
     return m
      
 #}}}}}     

@@ -43,3 +43,6 @@ import sys
 def eprint( *args ) :
   print( args, file=sys.stderr )
 
+
+def wprint( *args ) :
+  print( 'WARNING : ', args )
