@@ -73,24 +73,42 @@ class TimeDomainDataMod:
       self.ot=ot; self.orcv=orcv; self.osrc=osrc;
       self.dt=dt; self.drcv=drcv; self.dsrc=dsrc;
     self.ntrace = self.nrcv * self.nsrc
+    self.ndim = 3
     self.set_t()
     self.initialize()
 
   def initialize( self, val=0. ) :
-    self.d = val * np.ones((self.nsrc, self.nt, self.nrcv),'f')
-    self.axis = ('s','t','r')
+    if self.ndim == 3 :
+      self.d = val * np.ones((self.nsrc, self.nt, self.nrcv),'f')
+      self.axis = ('s','t','r')
+    else :
+      self.d = val * np.ones((self.nt, self.nrcv),'f')
+      self.axis = ('t','r')
+
   def read_header( self, input=None, f=None, fsrc=None, frcv=None ):
     if input is None :
       input = rsf.Input( f )
-    self.nrcv = input.int('n1')
-    self.nt   = input.int('n2')
-    self.nsrc = input.int('n3')
-    self.drcv = input.float('d1')
-    self.dt   = input.float('d2')
-    self.dsrc = input.float('d3')
-    self.orcv = input.float('o1')
-    self.ot   = input.float('o2')
-    self.osrc = input.float('o3')
+    self.ndim =  get_dim( input )
+    if self.ndim == 3 :
+      self.nrcv = input.int('n1')
+      self.nt   = input.int('n2')
+      self.nsrc = input.int('n3')
+      self.drcv = input.float('d1')
+      self.dt   = input.float('d2')
+      self.dsrc = input.float('d3')
+      self.orcv = input.float('o1')
+      self.ot   = input.float('o2')
+      self.osrc = input.float('o3')
+    else :
+      self.nrcv = input.int('n1')
+      self.nt   = input.int('n2')
+      self.nsrc = 1
+      self.drcv = input.float('d1')
+      self.dt   = input.float('d2')
+      self.dsrc = 1
+      self.orcv = input.float('o1')
+      self.ot   = input.float('o2')
+      self.osrc = 0.
     self.t = set_t( self.ot, self.dt, self.nt )
     # setup srcs and rcvs
     if fsrc :
@@ -122,8 +140,6 @@ class TimeDomainDataMod:
   def set_t( self ) :
     self.t = set_t( self.ot, self.dt, self.nt ) 
 
-
-
   def extract_time( self, tmin, tmax ) :
    
     self.set_t()
@@ -147,7 +163,8 @@ class TimeDomainDataMod:
     if input is None :
       input = rsf.Input( f )
     self.read_header( input, fsrc=fsrc, frcv=frcv )
-    self.d=np.zeros((self.nsrc,self.nt,self.nrcv),'f')
+    self.initialize()
+
     input.read(self.d)
     input.close()
 
@@ -380,6 +397,7 @@ class MCTimeDomainDataMod:
   def read_header( self, input=None, f=None, fsrc=None, frcv=None ):
     if input is None :
       input = rsf.Input( f )
+
     self.nrcv=input.int('n1')
     self.nc=input.int('n2')
     self.nt  =input.int('n3')
@@ -994,4 +1012,94 @@ class MCTimeDomainData:
     self.axis=('s','r','c','t')
   def set_t( self ) :
     self.t = set_t( self.ot, self.dt, self.nt ) 
+
+#--------------------------------------------------------------------------
+# SourceWavelet - Source Wavelet : time - componet - source
+#--------------------------------------------------------------------------
+class SourceWavelet:
+  def __init__(self, ref=None, 
+                     nsrc=1,  nc=1,  nt=1, dsrc=1., dc=1., dt=1.,
+                     osrc=0., oc=0., ot=0.):
+    if ref is not None :
+      self.nsrc = ref.nsrc; self.nc = ref.nc; self.nt = ref.nt; 
+      self.dsrc = ref.dsrc; self.dc = ref.dc; self.dt = ref.dt; 
+      self.osrc = ref.osrc; self.oc = ref.oc; self.ot = ref.ot;
+    else :
+      self.nsrc = nsrc; self.nc = nc; self.nt = nt; 
+      self.dsrc = dsrc; self.dc = dc; self.dt = dt; 
+      self.osrc = osrc; self.oc = oc; self.ot = ot;
+    self.ndim = 3
+    self.axis = ['t', 'c', 'r']
+    self.initialise(0.)
+  def get_header(self, input=None, f=None ):
+    if input is None :
+      input = rsf.Input( f )
+    self.ndim = get_dim( input )
+
+    if self.ndim == 3 :
+      self.nsrc = input.int('n1')
+      self.nc   = input.int('n2')
+      self.nt   = input.int('n3')
+      self.dsrc = input.float('d1')
+      self.dc   = input.float('d2')
+      self.dt   = input.float('d3')
+      self.osrc = input.float('o1')
+      self.oc   = input.float('o2')
+      self.ot   = input.float('o3')
+      self.set_t()
+    else :
+      self.nsrc = input.int('n1' )
+      self.nc   = 1
+      self.nt   = input.int('n2')
+      self.dsrc = input.float( 'd1' )
+      self.dc   = 1 
+      self.dt   = input.float('d2')
+      self.osrc = input.float( 'o1' )
+      self.oc   = 0
+      self.ot   = input.float('o2')
+      self.set_t()
+  def set_t( self ) :
+    self.t = self.ot + np.arange( self.nt, dtype=float ) * self.dt
+  def initialize(self, val=0.):
+    if self.ndim == 3 :
+      self.d = val * np.ones(( self.nt, self.nc, self.nsrc), dtype=np.float32)
+      self.axis = ['t', 'c', 's']
+    else :
+      self.d = val * np.ones( ( self.nt, self.nsrc), dtype=np.float32 )
+  def initialise(self, val=0.):
+    self.initialize( val )
+  def return_header(self):
+    return {'nsrc': self.nsrc,'nc':self.nc,'nt':self.nt,
+        'osrc': self.osrc,'oc':self.oc,'ot':self.ot,
+        'dsrc': self.dsrc,'dc':self.dc,'dt':self.dt}
+  def read_rsf( self, input=None, f=None ):
+    self.read( input=input, f=f )
+  def read(self,input=None, f=None):
+    if input is None :
+      input = rsf.Input( f )
+    self.get_header(input)
+    self.initialise()
+    input.read(self.d)
+  def write_rsf( self, output=None, f=None ):
+    self.write( output=output, f=f )
+  def write(self, output=None, f=None ):
+    if output is None :
+      output = rsf.Output( f )
+    output.put('n1',self.nsrc)
+    output.put('n2',self.nc)
+    output.put('n3',self.nt)
+    output.put('d1',self.dsrc)
+    output.put('d2',self.dc)
+    output.put('d3',self.dt)
+    output.put('o1',self.osrc)
+    output.put('o2',self.oc)
+    output.put('o3',self.ot)
+    output.write(np.float32(self.d))
+    output.close()
+  def tcs2cst(self):
+    self.d=np.transpose(self.d,[1,2,0])
+    self.axis=['c','s','t']  
+  def cst2tcs(self):
+    self.d=np.transpose(self.d,[2,0,1])
+
 
