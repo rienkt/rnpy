@@ -87,6 +87,20 @@ class Model:
       print( 'usage: self.read( input=hoge, f=hoge.rsf )' )
       print( '       we need either of input or file name' )
 
+
+  def write_header_only( self, f=None, fbin=None ) :
+    print( self.ox, self.oz, self.dx, self.dz )
+    with open( f, 'w' ) as frsf :
+      frsf.write( 'data_format="native_float"\n' )
+      frsf.write( 'n1=%d\n'%self.nz )
+      frsf.write( 'n2=%d\n'%self.nx )
+      frsf.write( 'o1=%d\n'%self.oz )
+      frsf.write( 'o2=%d\n'%self.ox )
+      frsf.write( 'd1=%d\n'%self.dz )
+      frsf.write( 'd2=%d\n'%self.dx )
+      frsf.write( 'in=%s\n'%fbin )
+
+
   def write( self, output=None, f=None, fsrc=None ) :
     #print( 'here model 1', output, f, 'fsrc',  fsrc )
     if output is None :
