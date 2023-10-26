@@ -71,16 +71,35 @@ class Model:
         input = rsf.Input( f )
       except :
         print( 'file %f cannot be found'%f )
-      flag = 1
+      #flag = 1
 
-    self.read_header( input=input ) 
-    #print( self.dx )
 
-    self.initialize( 0.0 )
-    input.read(self.d)
-    self.set_axis()
-    if flag == 1 :
-      input.close()
+    try :
+      self.read_header( input=input ) 
+      #print( self.dx )
+
+      self.initialize( 0.0 )
+      input.read(self.d)
+      self.set_axis()
+      #if flag == 1 :
+      #  input.close()
+    except :
+      print( 'usage: self.read( input=hoge, f=hoge.rsf )' )
+      print( '       we need either of input or file name' )
+
+
+  def write_header_only( self, f=None, fbin=None ) :
+    print( self.ox, self.oz, self.dx, self.dz )
+    with open( f, 'w' ) as frsf :
+      frsf.write( 'data_format="native_float"\n' )
+      frsf.write( 'n1=%d\n'%self.nz )
+      frsf.write( 'n2=%d\n'%self.nx )
+      frsf.write( 'o1=%d\n'%self.oz )
+      frsf.write( 'o2=%d\n'%self.ox )
+      frsf.write( 'd1=%d\n'%self.dz )
+      frsf.write( 'd2=%d\n'%self.dx )
+      frsf.write( 'in=%s\n'%fbin )
+
 
   def write( self, output=None, f=None, fsrc=None ) :
     #print( 'here model 1', output, f, 'fsrc',  fsrc )
@@ -105,8 +124,8 @@ class Model:
     #output.close()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.z = np.arange( 0, self.nz, dtype=float ) * self.dz + self.oz
 
   def norm( self ):
     norm = np.dot( self.d.reshape( ( self.nx * self.nz, 1 ) )
@@ -224,8 +243,8 @@ class FreqDomainModelSnap :
     output.close()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.z = np.arange( 0, self.nz, dtype=float ) * self.dz + self.oz
 
 
   def m2km( self ) :
@@ -314,9 +333,9 @@ class TimeDomainModelSnap :
     output.close()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
-    self.t = np.arange( 0, self.nt, dtype=np.float ) * self.dt + self.ot
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.z = np.arange( 0, self.nz, dtype=float ) * self.dz + self.oz
+    self.t = np.arange( 0, self.nt, dtype=float ) * self.dt + self.ot
 
      
 
@@ -412,9 +431,9 @@ class MCTimeDomainModelSnap :
     #output.close()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.z = np.arange( 0, self.nz, dtype=np.float ) * self.dz + self.oz
-    self.t = np.arange( 0, self.nt, dtype=np.float ) * self.dt + self.ot
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.z = np.arange( 0, self.nz, dtype=float ) * self.dz + self.oz
+    self.t = np.arange( 0, self.nt, dtype=float ) * self.dt + self.ot
 
      
 

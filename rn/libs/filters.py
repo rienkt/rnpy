@@ -74,7 +74,7 @@ def remove_dc( din, i0=0, i1=-1 ) :
     din[ i0, : ] -= dmean[ i0 ]
 
   din = np.reshape( din, nshape_in )
-  print( nshape_in, din.shape )
+  #print( nshape_in, din.shape )
 
 
   return din, dmean
@@ -127,7 +127,7 @@ def time_window_hanning( din, t, tbeg, tend, top_taper, bottom_taper ) :
   itime_window_0 = ntbeg - top_ntaper
   itime_window_1 = itime_window_0 + ntime_window
 
-  f = np.zeros( nt, dtype=np.float )
+  f = np.zeros( nt, dtype=float )
   f[ itime_window_0 : itime_window_1 ] = time_window_filter
 
 
@@ -171,7 +171,7 @@ def time_window( din, t, fbreak,
 
   ntrace = d.shape[ 0 ] 
   # make arrays longer to avoid the end of window is too long...
-  dtmp = np.concatenate( ( d, np.zeros( ( ntrace, ntime_window ), dtype=np.float ) ), axis=-1 )
+  dtmp = np.concatenate( ( d, np.zeros( ( ntrace, ntime_window ), dtype=float ) ), axis=-1 )
 
   for itrace in range( ntrace ) :
     if fbreak.mask[ itrace ] :

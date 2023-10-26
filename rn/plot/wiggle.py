@@ -54,7 +54,7 @@ def wiggle( ax, datain, xax, yax, wiggle_scale=1., direction='v', fill='y' ):
   vals = data.ravel() #flat view of the 2d array.
 
   # flat index array, for correctly location zero crossing in the flat view
-  vect = np.arange(vals.size).astype(np.float) 
+  vect = np.arange(vals.size).astype(float) 
 
   # index before zero crossing
   crossing = np.where(np.diff(np.signbit(vals)))[0] 
@@ -98,7 +98,7 @@ def wiggle( ax, datain, xax, yax, wiggle_scale=1., direction='v', fill='y' ):
 
 def wiggle_simple( ax, din, x, y, 
       wiggle_scale=1., direction='v', norm='y', linewidth=0.5,   
-      linecolors='k' ) :
+      linecolors='k', linealphas = 1.0, linestyles = '-' ) :
 
 
 
@@ -113,22 +113,35 @@ def wiggle_simple( ax, din, x, y,
     lcolor = linecolors
     linecolors = [ lcolor for i in range(n0) ]
 
-  print( linecolors )
+  if linealphas is None :
+    linealphas =[ 1.0 for i in range(n0) ] 
+  elif type(linealphas) == float :
+    lalpha = linealphas
+    linealphas = [ lalpha for i in range(n0) ]
+
+  if linestyles is None :
+    linestyles =[ '-' for i in range(n0) ] 
+  elif type(linestyles) == str :
+    lstyle = linestyles
+    linestyles = [ lstyle for i in range(n0) ]
+  #print( linecolors )
 
   if norm == 'y' :
     scale = wiggle_scale / np.max( np.abs( din ) )
   else :
     scale = wiggle_scale
-  print( 'scale', scale, 'n0', n0 )
+  #print( 'scale', scale, 'n0', n0 )
 
   if direction == 'h' :
-    shift = np.arange( 0, n0, dtype=np.float ) * dy
+    shift = np.arange( 0, n0, dtype=float ) * dy
     for i0 in range( n0 ) :
-      ax.plot( x, din[ i0, : ] * scale + shift[ i0 ], 'k', 
-          linewidth=linewidth, color=linecolors[i0])
+      ax.plot( x, din[ i0, : ] * scale + shift[ i0 ],  
+          linewidth=linewidth, linestyle=linestyles[i0],
+          color=linecolors[i0],
+          alpha = linealphas[i0] )
 
   else :
-    shift = np.arange( 0, n0, dtype=np.float ) * dx
+    shift = np.arange( 0, n0, dtype=float ) * dx
     for i0 in range( n0 ) :
       ax.plot( din[ i0, : ] * scale + shift[ i0 ], y, color=linecolors[i0] )
 

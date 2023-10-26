@@ -22,6 +22,7 @@ __author__ = "Rie Nakata (Kamei)"
 #==============================================================================
 
 import numpy as np
+import pandas as pd
 #import scipy as sp
 #import matplotlib.pyplot as plt
 #import sys
@@ -41,9 +42,9 @@ import utm
 
 def dist( pt1, pt2 ):
   if type(pt1) is list :
-    pt1 = np.asarray( pt1, dtype=np.float )
+    pt1 = np.asarray( pt1, dtype=float )
   if type(pt2) is list :
-    pt2 = np.asarray( pt2, dtype=np.float )
+    pt2 = np.asarray( pt2, dtype=float )
   return np.sqrt( np.sum( ( pt1-pt2 ) **2 ) )
 
 def dist_xyz( x, y, z=None ):
@@ -59,10 +60,11 @@ def rotate_xy( xin, yin, rot ) :
   return xout, yout
 
 def to_latlon( utmx, utmy, izone, czone ) :
+  print( izone, czone )
   if type( utmx ) is np.ndarray  :
     n = utmx.size
-    lat = np.zeros( n, dtype=np.float )
-    lon = np.zeros( n, dtype=np.float )
+    lat = np.zeros( n, dtype=float )
+    lon = np.zeros( n, dtype=float )
     print(n)
     for i in range(n) :
       tmp = utm.to_latlon( utmx[i], utmy[i], izone, czone )
@@ -74,11 +76,12 @@ def to_latlon( utmx, utmy, izone, czone ) :
     lon = tmp[1]
   return lat, lon
 
+
 def from_latlon( lat, lon, izone=None, czone=None ) :
-  if type( lat ) is np.ndarray  :
+  if ( type( lat ) is np.ndarray  ) or ( type(lat) is pd.core.series.Series) : 
     n = lat.size
-    utmx = np.zeros( n, dtype=np.float )
-    utmy = np.zeros( n, dtype=np.float )
+    utmx = np.zeros( n, dtype=float )
+    utmy = np.zeros( n, dtype=float )
     print(n)
     for i in range(n) :
       tmp = utm.from_latlon( lat[i], lon[i], izone, czone )
@@ -91,4 +94,8 @@ def from_latlon( lat, lon, izone=None, czone=None ) :
   return utmx, utmy
 
 
+def utm2latlon( utmx, utmy, izone, czone ) :
+  return to_latlon( utmx, utmy, izone, czone )
 
+def latlon2utm( lat, lon, izone=None, czone=None ) :
+  return from_latlon( lat, lon, izone, czone )

@@ -60,7 +60,7 @@ class rn_freq( rn_bin.rn_freq ) :
     self.set_n( n )
     
     self.d = np.array( [ line.split()[0] for line in lines[1:n+1] ],
-                        dtype=np.float )
+                        dtype=float )
     
 
 # define function     
@@ -200,10 +200,11 @@ class FreqdomainData:
     self.outputre.put('o3',self.freqs.d[0])
     self.outputim.put('n1',self.rcvs.n)
     self.outputim.put('n2',self.srcs.n)
-    #self.outputim.put('n3',self.freqs.n)
-    self.outputim.put('d1',self.rcvs.d)
-    self.outputim.put('d2',self.srcs.d)
-    self.outputim.put('d3',self.freqs.d)
+    self.outputim.put('n3',self.freqs.n)
+    self.outputim.put('d1',1.)
+    self.outputim.put('d2',1.)
+    #print( 'i am here', self.freqs.d )
+    self.outputim.put('d3',1.)
     self.outputim.put('o1',self.rcvs.o)
     self.outputim.put('o2',self.srcs.o)
     self.outputim.put('o3', self.freqs.d[0])
