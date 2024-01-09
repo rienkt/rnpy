@@ -724,9 +724,9 @@ class Modelxyt:
     self.write_data()
 
   def set_axis( self ) :
-    self.x = np.arange( 0, self.nx, dtype=np.float ) * self.dx + self.ox
-    self.y = np.arange( 0, self.ny, dtype=np.float ) * self.dy + self.oy
-    self.t = np.arange( 0, self.nt, dtype=np.float ) * self.dt + self.ot
+    self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
+    self.y = np.arange( 0, self.ny, dtype=float ) * self.dy + self.oy
+    self.t = np.arange( 0, self.nt, dtype=float ) * self.dt + self.ot
 
   def norm( self ):
    self.ntrace = self.nx * self.ny * self.nt
