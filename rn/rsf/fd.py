@@ -38,6 +38,16 @@ class rn_loc( rn_bin.rn_loc ) :
       print( '%s does not exist'%self.fname ) 
       self.x = np.arange( 0, self.n, dtype='f' )*self.d + self.o
       self.z = np.arange( 0, self.n, dtype='f' )*self.d + self.o
+  def write( self, floc=None ) :
+    if os.path.isfile( self.fname ):
+      try :
+        self.x = np.fromfile( floc, sep = ' ', count = self.n * 2
+                    ).reshape( [self.n, 2] )[:, 0]
+        self.z = np.fromfile( floc, sep = ' ', count = self.n * 2 
+                    ).reshape( [self.n, 2] )[:, 1]
+      except :
+        self.x = np.arange( 0, self.n, dtype='f' )*self.d + self.o
+        self.z = np.arange( 0, self.n, dtype='f' )*self.d + self.o
   def m2km( self ):
     self.x *= 1e-3
     self.z *= 1e-3
