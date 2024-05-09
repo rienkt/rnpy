@@ -45,16 +45,21 @@ def set_t( ot, dt, nt ) :
 
 # set loc class by reading rsf file
 
-def rsf_loc( floc ) :
-  input = rsf.Input( floc )
-  n1 = input.int( 'n1' )
-  n2 = input.int( 'n2' )
-  loc = rn_loc( n=n2 ) 
-  tmp = np.zeros( ( loc.n, 2 ), dtype=np.float32) 
-  input.read( tmp )
-  loc.x = tmp[ :, 0 ]
-  loc.z = tmp[ :, 1 ]
-  return loc
+class rsf_loc( ) :
+  def __init__( self, n=1 ) :
+    self.n = n
+    #self.x = np.zeros( self.n, dtype=float )
+    #self.z = np.zeros( self.n, dtype=float )
+  def read( self,  floc ) :
+    input = rsf.Input( floc )
+    n1 = input.int( 'n1' )
+    n2 = input.int( 'n2' )
+    loc = rn_loc( n=n2 ) 
+    tmp = np.zeros( ( loc.n, 2 ), dtype=np.float32) 
+    input.read( tmp )
+    loc.x = tmp[ :, 0 ]
+    loc.z = tmp[ :, 1 ]
+    #return loc
 
 
 #--------------------------------------------------------------------------

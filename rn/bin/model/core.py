@@ -293,7 +293,7 @@ class Modelxy:
     self.d = np.ma.masked_less_equal( 
                   np.fromfile( fbin, dtype = np.float32 
                  ).reshape( self.nx, self.ny ), -9999. )
-    self.data =self.d
+    self.data = self.d
 
 
   def read( self, fheader=None ):
@@ -327,7 +327,7 @@ class Modelxy:
 
   def write_data( self ) :
     fbin = os.path.join( self.fdir, self.fbin )
-    print( self.d[100,100] )
+    #print( self.d[100,100] )
     try :
       self.d.filled( -9999. ).astype( np.float32 ).tofile( fbin )
     except :

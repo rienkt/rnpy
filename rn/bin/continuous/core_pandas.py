@@ -215,8 +215,6 @@ class rn_binary(object) :
 
     self.chs = rn_chs()
     self.channels = []
-    
-    #sels.stations = rn_stations()
   
 
   def initialize(self, val = 0. ) :
@@ -240,11 +238,11 @@ class rn_binary(object) :
         n = i
         break
 
-    #print 'empty line found at ', n
+    print 'empty line found at ', n
 
     # now find # of components
     self.nchannels = int(info[n+1].split()[4])
-    #print 'number of channels: ', self.nchannels
+    print 'number of channels: ', self.nchannels
     
     self.channels = [ x.split()[3] for x in info[ 0:self.nchannels ] ] 
 
@@ -256,7 +254,7 @@ class rn_binary(object) :
     #self.chs.x  = np.zeros( self.chs.n, dtype=np.float )
     #self.chs.y  = np.zeros( self.chs.n, dtype=np.float )
     #self.chs.z  = np.zeros( self.chs.n, dtype=np.float )
-    #print 'channels: ', self.channels
+    print 'channels: ', self.channels
 
     # now find start time 
     date0 = info[ self.nchannels+1 ].split()[2]
@@ -268,7 +266,7 @@ class rn_binary(object) :
     mm = int( time0[2:4] )
     ss = int( time0[4:6]  )
     self.t0 = tz_jp.localize( datetime.datetime( year, mon, day, hh, mm, ss ) )
-    #print 'start time', self.t0
+    print 'start time', self.t0
 
     # now find end time
     date1 = info[ -4 ].split()[2]
@@ -280,7 +278,7 @@ class rn_binary(object) :
     mm = int( time1[2:4] )
     ss = int( time1[4:6]  )
     self.t1 = tz_jp.localize( datetime.datetime( year, mon, day, hh, mm, ss ) )
-    #print 'end time: ', self.t0  
+    print 'end time: ', self.t0  
 
   # this is left for some historical reason
   def read_header_nofbin(self, fheader=None):
@@ -457,7 +455,7 @@ class rn_binary(object) :
   # use this if read after win2bin
   def read_data_int(self):
     self.set_totalsec_nsamples() 
-    #print self.nsamples,self.nchannels
+    print self.nsamples,self.nchannels
     self.data = np.fromfile( os.path.join( self.fdir, self.fbin ), 
           dtype = np.dtype('i4') 
            ).reshape(self.chs.n, self.nsamples)
@@ -467,7 +465,7 @@ class rn_binary(object) :
     if fbin is not None :
       self.fbin = fbin
     self.set_totalsec_nsamples() 
-    #print self.nsamples,self.nchannels
+    print self.nsamples,self.nchannels
     self.data = np.fromfile( os.path.join( self.fdir, self.fbin ), 
             dtype = np.dtype('float32') 
            ).reshape(self.chs.n, self.nsamples)

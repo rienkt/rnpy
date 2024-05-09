@@ -4,7 +4,8 @@ from matplotlib.ticker import (MultipleLocator, AutoMinorLocator, LogLocator)
 import matplotlib
 
 rcParams['font.family'] = 'sans-serif'
-rcParams['font.sans-serif'] = 'Arial'
+rcParams['font.sans-serif'] = ['Arial']
+#rcParams['font.sans-serif'] = 'Helvetica'
 rcParams['pdf.fonttype'] = 42
 
 import matplotlib.ticker as mticker
@@ -17,14 +18,21 @@ except :
   print( 'cartopy is not available' )
   #rcParams['png.fonttype'] = 42
 
+subtitles = [ '(a)', '(b)', '(c)', '(d)', '(e)',
+              '(f)', '(g)', '(h)', '(i)',  '(j)',
+              '(k)', '(l)', '(m)','(n)', '(o)', '(p)','(q)','(r)' ]
+
+
+
 def add_text( ax, x, y, text, fontsize=12, fontweight='regular', 
               color='k', bbox_alpha=0.5, halign='center',
               bbox_linewidth=0, bbox_style='square',
               valign='center' , rotation=0) :
       position = [ x, y ]
+      print( fontweight )
       ax_subtitle = ax.text( -0.1, 0.5, text, 
                fontsize=fontsize, 
-               fontweight=fontweight,
+               weight=fontweight,
                color = color,
                bbox=dict( facecolor='w', 
                           alpha=bbox_alpha, linewidth=bbox_linewidth,
@@ -253,12 +261,12 @@ def remove_axlabels( axs,
   if xh0 is None :
     xh0 =0 
   if xh1 is None :
-    xh1 = nh 
+    xh1 = nh  -1
   if xlabel_loc == 'top' :
     if xv0 is None :
       xv0 =1 
     if xv1 is None :
-      xv1 = nv 
+      xv1 = nv  -1
   else :
     if xv0 is None :
       xv0 = 0
@@ -268,22 +276,22 @@ def remove_axlabels( axs,
   if yh0 is None :
     yh0 = 1 
   if yh1 is None :
-    yh1 = nh 
+    yh1 = nh -1
   if yv0 is None :
     yv0 =0 
   if yv1 is None :
-    yv1 = nv 
+    yv1 = nv -1 
   # remove xs
   if xaxis  :
-    for iv in range( xv0, xv1 ) :
-      for ih in range( xh0, xh1 ) :
+    for iv in range( xv0, xv1 +1 ) :
+      for ih in range( xh0, xh1 +1) :
         ax = axs[ iv ][ ih ]
         ax.set_xlabel( '' )
         ax.set_xticklabels( [  ] )
 
   if yaxis :
-    for iv in range( yv0, yv1 ) :
-      for ih in range( yh0, yh1 ) :
+    for iv in range( yv0, yv1  + 1) :
+      for ih in range( yh0, yh1 + 1) :
         ax = axs[ iv ][ ih ]
         ax.set_ylabel( '' )
         ax.set_yticklabels( [ ] )
@@ -306,8 +314,8 @@ class FigFormat :
 #{{{{{
   def __init__( self, figsize=None, widths=None, heights=None, paperwidth=None,
                 width_ratios=None, height_ratios=None, left=None, right=None,
-                top=None, bottom=None, dwidths=None, dwidth=None, dheight=None, 
-                dheights=None, aspect=None ) :
+                top=None, bottom=None, dwidths=None, dwidth=None, dheight=None,
+                dheights=None, aspect=None, projection=None ) :
     self.figsize = figsize
     self.widths  = widths
     self.heights = heights 
@@ -323,16 +331,17 @@ class FigFormat :
     self.dheight = dheight
     self.dheights = dheights
     self.aspect = aspect
+    self.projection = projection
   def calc_figsize_widths_heights( self ) :
     self.figsize, self.widths, self.heights = calc_figsize_widths_heights( 
         self.paperwidth, self.width_ratios, 
         self.height_ratios, self.left, self.right, self.bottom, self.top,
         self.dwidth, self.dheight, self.aspect , dwidths=self.dwidths, 
         dheights=self.dheights)
-  def create_axes( self, fig ) :
+  def create_axes( self, fig, projection=None ) :
     axs, caxs = create_axes( fig, self.widths, self.heights, self.left, 
         self.bottom, self.dwidth, self.dheight, dwidths=self.dwidths, 
-        dheights=self.dheights )
+        dheights=self.dheights, projection=projection )
     return axs, caxs
 
   def calc_aspect_from_axis_range( self, axfmt ) :
@@ -342,14 +351,18 @@ class FigFormat :
 
 class AxesFormat :
   #{{{{{
-  def __init__ (self, xlabel=None, ylabel=None, xmin=None, xmax=None,
+  def __init__ (self, 
+                xlabel=None, ylabel=None, rlabel=None,
+                xmin=None, xmax=None,
                 ymin=None, ymax=None, 
-                xticks=None, yticks=None, cticks=None, 
-                xscale=None, yscale=None,
+                rmin=None, rmax=None,
+                xticks=None, yticks=None, cticks=None, rticks=None,
+                xscale=None, yscale=None, rscale=None,
                 xticks_minor=None, yticks_minor=None, cticks_minor=None,
-                flag_xminor=0, flag_yminor=0,
-                xticklabels=None, yticklabels=None,
-                xaxis_loc='top', yaxis_loc='left',
+                rticks_minor=None,
+                flag_xminor=0, flag_yminor=0,flag_rminor=0,
+                xticklabels=None, yticklabels=None,rticklabels=None,
+                xaxis_loc=None, yaxis_loc=None, raxis_loc='None',
                 title=None, 
                 subtitle=None, subtitle_position=None,
                 subtitle_dir='h', 
@@ -369,10 +382,11 @@ class AxesFormat :
                 subtitle3_fontsize=12, subtitle3_fontweight='bold',
                 subtitle3_color = 'k', 
                 subtitle3_bbox_alpha = 0,
-                xgrid=True, ygrid=True,
+                xgrid=True, ygrid=True,rgrid=True,
                 grid_linewidth=1, grid_linestyle=':',
                 fontsize=14,
-                vmin=None, vmax=None, cmap='jet'
+                vmin=None, vmax=None, cmap='jet',
+                polar=False,
                 ) :
     self.xlabel = xlabel
     self.ylabel = ylabel
@@ -380,21 +394,32 @@ class AxesFormat :
     self.xmax   = xmax
     self.ymin   = ymin
     self.ymax   = ymax
+    self.rmin   = rmin
+    self.rmax   = rmax
     self.xscale = xscale
     self.yscale = yscale
+    self.rscale = rscale
     self.xticks  = xticks
     self.yticks  = yticks
+    self.rticks  = rticks
     self.cticks  = cticks
     self.flag_xminor = flag_xminor
     self.flag_yminor = flag_yminor
+    self.flag_rminor = flag_rminor
     self.cticks_minor  = cticks_minor
     self.xticks_minor  = xticks_minor
     self.yticks_minor  = yticks_minor
+    self.rticks_minor  = rticks_minor
     self.yticklabels = yticklabels
+    self.rticklabels = rticklabels
     self.xticklabels = xticklabels
 
     self.xaxis_loc = xaxis_loc
     self.yaxis_loc = yaxis_loc
+    self.raxis_loc = raxis_loc
+
+
+    self.polar = polar
     
     self.title  = title
     self.subtitle2 = subtitle2
@@ -446,97 +471,101 @@ class AxesFormat :
     ax.tick_params( 
       bottom=True, top=True, 
       left=True, right=True )
-    if self.xlabel : 
-      ax.set_xlabel( self.xlabel, fontsize=self.fontsize )
 
-    if self.ylabel :
-      ax.set_ylabel( self.ylabel, fontsize=self.fontsize)
+    if self.polar == False :
+      if self.xlabel : 
+        ax.set_xlabel( self.xlabel, fontsize=self.fontsize )
+
+      if self.ylabel :
+        ax.set_ylabel( self.ylabel, fontsize=self.fontsize)
 
 
-    if self.xaxis_loc == 'top' :
-      ax.xaxis.tick_top()
-      ax.xaxis.set_label_position('top')
+      if self.xaxis_loc == 'top' :
+        ax.xaxis.tick_top()
+        ax.xaxis.set_label_position('top')
+   
+      if self.yaxis_loc == 'right' :
+        ax.yaxis.tick_right()
+        ax.yaxis.set_label_position('right')
+
+      if self.xscale :
+        ax.set_xscale( self.xscale )
+      if self.yscale :
+        ax.set_yscale( self.yscale )
  
-    if self.yaxis_loc == 'right' :
-      ax.yaxis.tick_right()
-      ax.yaxis.set_label_position('right')
+      if type( self.cticks ) == np.ndarray :
+        ax.set_ticks( self.cticks )
+        #self.flag_xminor = 2
 
-    if self.xscale :
-      ax.set_xscale( self.xscale )
-    if self.yscale :
-      ax.set_yscale( self.yscale )
- 
+
+      if self.xticklabels :
+        ax.set_xticklabels( self.xticklabels )
+      elif self.xticklabels == '' :
+        ax.set_xticklabels( self.xticklabels )
+
+
+
+      
+      ax.tick_params( axis='both', which='major', labelsize=self.fontsize )
+
     if type( self.xticks ) is np.ndarray :
       ax.set_xticks( self.xticks )
-
-
     if type( self.xticks_minor ) is np.ndarray :
       ax.set_xticks( self.xticks_minor, minor=True )
-      #self.flag_xminor = 2
-
     if type( self.yticks ) is np.ndarray :
       ax.set_yticks( self.yticks )
 
     if type( self.yticks_minor ) is np.ndarray :
       ax.set_yticks( self.yticks_minor, minor=True )
       #self.flag_yminor = 2
-
-    if type( self.cticks ) == np.ndarray :
-      ax.set_ticks( self.cticks )
-
-    if self.xticklabels :
-      ax.set_xticklabels( self.xticklabels )
-    elif self.xticklabels == '' :
-      ax.set_xticklabels( self.xticklabels )
-
-
     if self.yticklabels :
       ax.set_yticklabels( self.yticklabels )
     elif self.yticklabels == '' :
       ax.set_yticklabels( self.yticklabels )
-      
+
+    if self.polar == False :
+      if self.flag_yminor == 1 :
+        ax.tick_params( axis='y', which='both', labelsize=self.fontsize )
+      if self.flag_xminor == 1 :
+        ax.tick_params( axis='x', which='both', labelsize=self.fontsize )
+      if self.ygrid :
+        if self.flag_yminor == 2 :
+          ax.yaxis.grid( self.ygrid, linestyle=self.grid_linestyle, which='both', 
+              linewidth=self.grid_linewidth)
+        else :
+          ax.yaxis.grid( self.ygrid, linestyle=self.grid_linestyle, which='major',
+              linewidth=self.grid_linewidth)
+       
+
+    #print( flag_xminor )
+      if self.xgrid :
+        if self.flag_xminor == 2 :
+          ax.xaxis.grid(self.xgrid, linestyle=self.grid_linestyle, which='both' ,
+              linewidth=self.grid_linewidth)
+        else :
+          ax.xaxis.grid(self.xgrid, linestyle=self.grid_linestyle, which='major' ,
+              linewidth=self.grid_linewidth)
 
     if self.title :
       ax.set_title( self.title, fontsize=self.fontsize+4,
                     fontweight='bold' )
 
-    ax.tick_params( axis='both', which='major', labelsize=self.fontsize )
-    if self.flag_yminor == 1 :
-      #ax.yaxis.set_minor_locator(AutoMinorLocator())
-      ax.tick_params( axis='y', which='both', labelsize=self.fontsize )
-      #if ax.yaxis.get_scale() == 'log' :
-        #y_minor = LogLocator(base = 10.0,
-             #subs = np.arange(1.0, 10.0) * 0.2, numticks = 5 ) 
-        #ax.yaxis.set_minor_locator(y_minor)
-        #ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-
-    if self.flag_xminor == 1 :
-      #ax.xaxis.set_minor_locator(AutoMinorLocator())
-      ax.tick_params( axis='x', which='both', labelsize=self.fontsize )
+    if self.polar == 1 :
+      self.xgrid = None
+      self.ygrid = None
 
 
-    if self.ygrid :
-      if self.flag_yminor == 2 :
-        ax.yaxis.grid( self.ygrid, linestyle=self.grid_linestyle, which='both', 
-            linewidth=self.grid_linewidth)
-      else :
-        ax.yaxis.grid( self.ygrid, linestyle=self.grid_linestyle, which='major',
-            linewidth=self.grid_linewidth)
-       
+    if self.polar is False :
+      if self.xmin is not None:
+        ax.set_xlim( self.xmin, self.xmax )
+      if self.ymin is not None:
+        ax.set_ylim( self.ymin, self.ymax )
 
-    #print( flag_xminor )
-    if self.xgrid :
-      if self.flag_xminor == 2 :
-        ax.xaxis.grid(self.xgrid, linestyle=self.grid_linestyle, which='both' ,
-            linewidth=self.grid_linewidth)
-      else :
-        ax.xaxis.grid(self.xgrid, linestyle=self.grid_linestyle, which='major' ,
-            linewidth=self.grid_linewidth)
+    if self.rmin is not None:
+      print( self.rmin, self.rmax )
+      ax.set_rlim( self.rmin, self.rmax )
 
-    if self.xmin is not None:
-      ax.set_xlim( self.xmin, self.xmax )
-    if self.ymin is not None:
-      ax.set_ylim( self.ymin, self.ymax )
+
 
     if self.subtitle :
 
@@ -603,6 +632,7 @@ class AxesFormat :
 class CbarAxesFormat :
 #{{{{{ 
   def __init__ (self, label=None, xlabel=None, ylabel=None, 
+                xaxis_loc ='top', 
                 ticks=None, ticks_minor=None,
                 fontsize=14, orientation='horizontal',
                 left=None, right=None, bottom=None, dbottom=None,
@@ -611,6 +641,7 @@ class CbarAxesFormat :
     self.label = label
     self.xlabel = xlabel
     self.ylabel = ylabel
+    self.xaxis_loc = xaxis_loc
     self.ticks = ticks
     self.ticks_minor = ticks_minor
  
@@ -639,23 +670,26 @@ class CbarAxesFormat :
           cbar.set_xlabel( self.label, fontsize=self.fontsize, fontweight='regular' )
       if self.orientation == 'vertical':
           cbar.set_ylabel( self.label, fontsize=self.fontsize, fontweight='regular' )
-#      cbar.set_label( self.label ) #, fontsize=self.fontsize+2, fontweight='bold' )
-#      cbar.set_label( self.label ) #, fontsize=self.fontsize+2, fontweight='bold' )
     if self.xlabel :
       try :
         cbar.set_xlabel( self.xlabel, 
-                         fontsize=self.fontsize-2 ) #, fontweight='bold')
+                         fontsize=self.fontsize ) #, fontweight='bold')
       except :
         cbar.ax.set_xlabel( self.xlabel, 
-                         fontsize=self.fontsize-2 ) #, fontweight='bold')
+                         fontsize=self.fontsize ) #, fontweight='bold')
  
     if self.ylabel :
       try :
         cbar.set_ylabel( self.ylabel, 
-                         fontsize=self.fontsize-2)
+                         fontsize=self.fontsize)
       except :
         cbar.ax.set_ylabel( self.ylabel, 
-                         fontsize=self.fontsize-2 )
+                         fontsize=self.fontsize )
+
+
+    if self.xaxis_loc == 'top' :
+        cbar.xaxis.tick_top()
+        cbar.xaxis.set_label_position('top')
     if type( self.ticks ) is np.ndarray :
       if self.orientation == 'horizontal' :
         cbar.set_xticks( self.ticks)

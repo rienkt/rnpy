@@ -29,6 +29,9 @@ import copy
 #======================================================================
 
 
+# xaxis: not time
+# yaxis: time 
+# regardless of direction
 def wiggle( ax, datain, xax, yax, wiggle_scale=1., direction='v', fill='y' ):
 
 
@@ -40,6 +43,8 @@ def wiggle( ax, datain, xax, yax, wiggle_scale=1., direction='v', fill='y' ):
   dy = yax[1]-yax[0]
   ny = len(yax)
   oy = yax[0]
+  print( dx, nx, ox , ox + dx*nx)
+  print( data.shape )
 
 
 
@@ -113,6 +118,9 @@ def wiggle_simple( ax, din, x, y,
     lcolor = linecolors
     linecolors = [ lcolor for i in range(n0) ]
 
+
+
+
   if linealphas is None :
     linealphas =[ 1.0 for i in range(n0) ] 
   elif type(linealphas) == float :
@@ -133,7 +141,7 @@ def wiggle_simple( ax, din, x, y,
   #print( 'scale', scale, 'n0', n0 )
 
   if direction == 'h' :
-    shift = np.arange( 0, n0, dtype=float ) * dy
+    shift = np.arange( 0, n0, dtype=float ) * dy + y[0]
     for i0 in range( n0 ) :
       ax.plot( x, din[ i0, : ] * scale + shift[ i0 ],  
           linewidth=linewidth, linestyle=linestyles[i0],
@@ -159,6 +167,7 @@ def wiggle_simple_irregular( ax, din, x, y,
   dx = x[1] - x[0]
   dy = y[1] - y[0]
 
+  #print( x )
   if linecolors is None :
     linecolors =[ 'k' for i in range(n0) ] 
   elif type(linecolors) == str :
