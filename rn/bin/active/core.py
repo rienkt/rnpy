@@ -641,39 +641,12 @@ class rn_binary(binary) :
     self.t = np.arange( 0., self.nt, dtype=float) * self.dt + self.ot
   #}}}}}
 
-  # nagaoka specific
-  def set_cmp_nagaoka( self, ocmp, dcmp, ncmp, ooffset, doffset, noffset,  #{{{{{
-                       flagmd=0 ) :
-    self.cmps   = rn_loc( ncmp )
-    self.offsets = rn_loc( noffset )
-
-    self.cmps.z     = np.arange( ncmp, dtype=float ) * dcmp + ocmp
-    self.offsets.z  = np.arange( noffset, dtype=float ) * doffset + ooffset
-    
-    if flagmd == 1 :
-      rrz, ssz = np.meshgrid( self.rcvs.md, self.srcs.md )
-    else :
-      rrz, ssz = np.meshgrid( self.rcvs.z, self.srcs.z )
-    zcmp = ( rrz + ssz ) / 2. 
-    zoffset = rrz - ssz
-
-    self.icmp    = np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=int )
-    self.ioffset = np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=int )
-    for isrc in range( self.srcs.n ) :
-      for ircv in range( self.rcvs.n ) : 
-        self.icmp[ isrc, ircv ] =  np.argmin( np.abs( zcmp[ isrc, ircv ] 
-                                                    - self.cmps.z ) )
-        self.ioffset[ isrc, ircv ] =  np.argmin( np.abs( zoffset[ isrc, ircv ] 
-                                                    - self.offsets.z ) )
-
-  #}}}}}  
-
   def extract_time( self, tmin, tmax ) : #{{{{{
     self.set_t()
     
     itmin = np.argmin( np.abs( self.t - tmin ) )
     itmax = np.argmin( np.abs( self.t - tmax) )
-
+    print( itmin, itmax )
 
     if self.d.ndim == 2 :
       self.d = self.d[ :, itmin:(itmax+1) ]
@@ -686,13 +659,13 @@ class rn_binary(binary) :
     self.set_t()
     #}}}}}
 
-
   def extend_time( self, tmax ) : #{{{{{
     
     nt = int( round( ( tmax - self.ot ) / self.dt ) )
 
     tmp = self.d
     
+    self.nt = nt
 
     if self.d.ndim == 2 :
       ntrace = tmp.shape[0]
@@ -705,7 +678,6 @@ class rn_binary(binary) :
       self.d[ :, :, :self.nt ] = tmp
 
 
-    self.nt = nt
     self.set_t()
   #}}}}}
 
@@ -757,7 +729,7 @@ class rn_binary(binary) :
       self.read_data_samelevel()
     else :
       self.d = np.fromfile( os.path.join( self.fdir, self.fbin ), 
-              dtype = dtype ).reshape(self.srcs.n, self.rcvs.n, self.nt)
+              dtype = dtype ).reshape(self.nc, self.srcs.n, self.rcvs.n, self.nt)
   #}}}}}
 
 
@@ -1146,3 +1118,428 @@ class cbinary( binary ) :
     self.write_header()
     self.write_data()
     #}}}}}
+
+class rn_binary3c(binary) :
+  def __init__( self, ref=None, nc=3,  nrcv=1, nsrc=1, ot=0, nt=1, dt=1., srcs=None, rcvs=None, flag_init=1 ) :  #{{{{{
+    if srcs :
+      nsrc = srcs.n
+    if rcvs :
+      nrcv = rcvs.n
+    binary.__init__( self, ref=ref, nrcv=nrcv, nsrc=nsrc ) 
+
+    if ref is None :
+      self.ot = ot
+      self.dt = dt
+      self.nt = nt
+      self.nc = nc
+    else :
+      self.ot = ref.ot
+      self.dt = ref.dt
+      self.nt = ref.nt 
+      self.nc = self.nc
+
+    self.set_t()
+    if flag_init == 1 :
+      self.initialize()
+  #}}}}}
+  
+  def initialize( self, val=0., gather=None ) : #{{{{{
+    if gather :
+      self.gather = gather 
+    elif not self.gather   :
+      self.gather = 'all'     
+  
+    if self.gather == 'all' :
+      self.d = np.ones( ( self.nc, self.srcs.n, self.rcvs.n, self.nt ), 
+                             dtype=np.float32 ) * val
+
+    elif self.gather == 'shot' :
+      self.d = np.ones( ( self.nc, self.rcvs.n, self.nt ), dtype=np.float32 ) * val
+
+    elif self.gather == 'receiver' :
+      self.d = np.ones( ( self.nc, self.srcs.n, self.nt ), dtype=np.float32 ) * val
+
+    else :
+      self.d = np.ones( ( self.srcs.n, self.nt ),
+                             dtype=np.float32 ) * val
+  #}}}}}
+
+  def read_header(self, fheader=None ): #{{{{{
+    binary.read_header( self, fheader )
+
+    #print( self.fdir, self.fheader )
+
+    with open( os.path.join( self.fdir, self.fheader )) as f:
+      lines = f.read().splitlines()
+
+
+    # line 0 bin file information
+    self.fbin = lines[0]
+
+    # line 1 time information
+    tmp = lines[1].split()
+    self.dt = float( tmp[1] )
+    self.ot = float( tmp[2] )
+    self.nt = int( tmp[0] )
+    self.set_t() 
+
+
+    # line 2 shot information
+    self.srcs.fname = lines[2]
+    self.srcs.fdir  = self.fdir
+
+
+    #print self.srcs.fname
+    try :
+      self.srcs.read()
+    except : 
+      print( '%s %s:source coord file is not in the right format'%( 
+            self.fdir, self.fheader ) )
+    # line 3 receiver information
+    self.rcvs.fname = lines[3]
+    self.rcvs.fdir  = self.fdir  
+  
+    try :
+      self.rcvs.read()
+    except : 
+      print( '%s %s:receiver coord file is not in the right format'%( 
+              self.fdir, self.fheader ) )
+
+    self.ircvs, self.isrcs = np.meshgrid( 
+                              np.arange( self.rcvs.n, dtype=int ),
+                              np.arange( self.srcs.n, dtype=int ) )
+
+    # line 4 fbreak information ( optional ) ....
+    self.fbreak = rn_fbreak()
+    try :
+      self.fbreak.fname = lines[4]
+      self.fbreak.fdir  = self.fdir
+      self.fbreak.read( self.srcs, self.rcvs )
+    except :
+      self.fbreak.fname = None
+      self.fbreak.time = np.ma.masked_equal( 
+                      np.zeros( ( self.srcs.n, self.rcvs.n ), dtype=float ), 
+                      0.0 ) 
+    # line 5 CMP file header infromation
+
+    self.cmps = rn_loc()
+    self.offsets = rn_loc()
+    try :
+      self.cmps.fname = lines[5].split()[0]
+      self.offsets.fname = lines[5].split()[1]
+    except :
+      self.cmps.fname = None
+      self.offsets.fname = None
+      #}}}}}
+
+  def set_t( self ) : #{{{{{
+    self.t = np.arange( 0., self.nt, dtype=float) * self.dt + self.ot
+  #}}}}}
+
+
+  def extract_time( self, tmin, tmax ) : #{{{{{
+    self.set_t()
+    
+    itmin = np.argmin( np.abs( self.t - tmin ) )
+    itmax = np.argmin( np.abs( self.t - tmax) )
+    print( itmin, itmax )
+
+    if self.d.ndim == 2 :
+      self.d = self.d[ :, itmin:(itmax+1) ]
+    else:
+      self.d = self.d[ :, :, :, itmin:(itmax+1) ]
+
+
+    self.ot = self.t[itmin]
+    self.nt = itmax - itmin + 1
+    self.set_t()
+    #}}}}}
+
+
+  def extend_time( self, tmax ) : #{{{{{
+    
+    nt = int( round( ( tmax - self.ot ) / self.dt ) )
+
+    tmp = self.d
+    
+
+    if self.d.ndim == 2 :
+      ntrace = tmp.shape[0]
+      self.d = np.zeros( ( ntrace, nt ), dtype=float )
+      self.d[ :, :self.nt ] = tmp
+    else:
+      n0 = tmp.shape[0]
+      n1 = tmp.shape[1]
+      self.d = np.zeros( ( n0, n1,  nt ), dtype=float )
+      self.d[ :, :, :self.nt ] = tmp
+
+
+    self.nt = nt
+    self.set_t()
+  #}}}}}
+
+
+  def write_header(self, fheader=None): #{{{{{
+    
+    if fheader is not None :
+      self.fheader = fheader
+      self.fdir = os.path.dirname( self.fheader )
+      self.fheader = os.path.basename( self.fheader )
+
+    # make sure to havea corect one
+    self.srcs.fdir = self.fdir
+    self.rcvs.fdir = self.fdir
+    self.fbreak.fdir = self.fdir 
+
+
+
+    outlines = []
+    outlines.append( '%s'%( self.fbin ) )
+    outlines.append( '%d %e %e'%( self.nt, self.dt, self.ot ) )
+    outlines.append( '%s'%( self.srcs.fname ) )
+    outlines.append( '%s'%( self.rcvs.fname ) )
+    if self.fbreak.fname is not None : 
+      outlines.append( '%s'%( self.fbreak.fname ) )
+
+
+
+    with open( os.path.join( self.fdir, self.fheader ), 'w' ) as f :
+      f.write( '\n'.join(outlines) )
+
+    self.srcs.write()
+    self.rcvs.write()
+
+    if self.fbreak.fname is not None :
+      self.fbreak.write( self.srcs, self.rcvs )
+  #}}}}}
+
+  def read_data( self, idx=None, z=None, dtype=np.float32  ) : #{{{{{
+    if self.gather == 'shot' :
+      self.read_data_shot( ishot=idx, dtype=dtype ) 
+    elif self.gather == 'receiver' :
+      self.read_data_receiver( ircv=idx, dtype=dtype )
+    elif self.gather == 'cmp' :
+      self.read_data_cmp( icmp=idx, dtype=dtype ) 
+    elif self.gather == 'offset' :
+      self.read_data_offset( ioffset=idx, dtype=dtype )
+
+    elif self.gather == 'samelevel' :
+      self.read_data_samelevel()
+    else :
+      self.d = np.fromfile( os.path.join( self.fdir, self.fbin ), 
+              dtype = dtype ).reshape( self.nc, self.srcs.n, self.rcvs.n, self.nt)
+  #}}}}}
+
+
+  
+  def read_data_shot( self, ishot, dtype=np.float32 ) : # ishot start from zero #{{{{{
+
+    if not self.fbinh :
+      self.open_data( op='r' )
+
+    self.isrc = ishot
+
+    try :
+      self.fbreak.time = self.fbreak.time[ ishot, : ]
+    except :
+      print( 'no fbreak data available' )
+      self.fbreak.time = np.zeros( self.rcvs.n, dtype=float )
+
+    ibyte  = np.dtype( np.float32 ).itemsize
+
+    self.d = np.zeros( ( self.rcvs.n, self.nt ), dtype=dtype  )
+
+    self.fbinh.seek( ibyte * ishot * self.nt * self.rcvs.n, os.SEEK_SET ) 
+    self.d[ :, : ] = np.fromfile( self.fbinh, dtype = dtype, 
+                             count= self.nt * self.rcvs.n 
+                            ).reshape( self.rcvs.n, self.nt )
+    #}}}}} 
+
+  def read_data_receiver( self, ircv, dtype=np.float32) : # ircv starts from 0 #{{{{{
+    print( 'receiver gather ')
+    if not self.fbinh :
+      self.open_data( op='r' )
+    ibyte  = np.dtype( dtype ).itemsize
+    if self.sort == 'receiver' :
+      self.fbinh.seek( ibyte * ircv * self.nt * self.srcs.n, os.SEEK_SET ) 
+      self.d[ :, : ] = np.fromfile( self.fbinh, dtype = dtype,  
+                               count= self.nt * self.srcs.n 
+                              ).reshape( self.srcs.n, self.nt )
+    else :
+      self.fbinh.seek( ibyte * ircv * self.nt, os.SEEK_SET )
+      for isrc in range( self.srcs.n ) :
+        self.d[ isrc, : ] = np.fromfile( self.fbinh, dtype = dtype,
+                               count= self.nt )
+        #print isrc, self.fbinh.tell()
+        self.fbinh.seek( ibyte * ( self.rcvs.n -1 ) * self.nt, os.SEEK_CUR )
+
+    try :
+      self.fbreak.time = self.fbreak.time[ :, ircv ]
+    except :
+      print( 'no fbreak data available' )
+      self.fbreak.time = np.zeros( self.srcs.n, dtype=float )
+    #}}}}}
+
+  def read_data_traces( self, traces, dtype=np.float32 ) : # ircv starts from 0 #{{{{{
+    if not self.fbinh :
+      self.open_data( op='r' )
+      
+    ntrace = len( traces )
+    ibyte  = np.dtype( dtype ).itemsize
+
+    self.d = np.zeros( ( ntrace, self.nt ), dtype=dtype )
+    print( self.d.shape )
+
+    for itrace in range( ntrace ) :
+      traceno = traces[itrace]
+      print( itrace, traceno)
+      self.fbinh.seek( ibyte*traceno*self.nt, os.SEEK_SET )
+      self.d[ itrace, : ] = np.fromfile( self.fbinh, dtype=dtype,
+                                count = self.nt )
+
+    try :
+      self.fbreak.time = self.fbreak.time.reshape( self.nsrc*self.nrcv 
+                            )[ traces ]
+    except :
+      print( 'no fbreak data available' )
+      self.fbreak.time = np.zeros( ntrace, dtype=float )
+    #}}}}}
+
+
+
+  ## These are for nagaoka dataset #{{{{{
+
+  def find_ioffset( self, offset ) :
+    return np.argmin( np.abs( self.offsets.z - offset ) )
+  def find_icmp( self, zcmp ) :
+    return np.argmin( np.abs( self.cmps.z - cmps ) )
+  def read_data_offset( self, ioffset=0 ) :
+
+    isrcs, ircvs = np.where( self.ioffset == ioffset ) 
+
+ 
+    ntraces = len( isrcs )
+    self.d = np.zeros( (  ntraces, self.nt ), dtype=float )
+
+    self.zcmp  = self.cmps.z[ self.icmp[ isrcs, ircvs ] ]   
+
+    fbreak = self.fbreak.time[ isrcs, ircvs ]
+ 
+    self.fbreak.time = fbreak
+
+    self.open_data()
+
+    for idx in range( ntraces ) :
+      itrace = isrcs[ idx ] * self.rcvs.n + ircvs[ idx ] 
+      self.fbinh.seek( 4 * itrace * self.nt , os.SEEK_SET )
+      self.d[ idx, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+                             count= self.nt )
+
+  def read_data_cmp( self, icmp=0 ) :
+
+    #icmp = np.argmin( np.abs( self.cmps.z - zcmp ) )
+
+
+    isrcs, ircvs = np.where( self.icmp == icmp ) 
+  
+    ntraces = len( isrcs )
+    self.d = np.zeros( (  ntraces, self.nt ), dtype=float )
+
+    self.zoffset  = self.offsets.z[ self.ioffset[ isrcs, ircvs ] ]   
+
+    fbreak = self.fbreak.time[ isrcs, ircvs ]
+ 
+    self.fbreak.time = fbreak
+
+    self.open_data()
+
+    for idx in range( ntraces ) :
+      itrace = isrcs[ idx ] * self.rcvs.n + ircvs[ idx ] 
+      self.fbinh.seek( 4 * itrace * self.nt , os.SEEK_SET )
+      self.d[ idx, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+                             count= self.nt )
+
+ 
+  # this only worns for nagaoka
+
+
+
+  def read_data_samelevel( self ) :
+    ircvs = np.zeros( self.srcs.n, dtype=int )
+
+    for isrc, zsrc in enumerate( self.srcs.z ) : 
+      ircvs[ isrc ] = np.argmin( np.abs( self.rcvs.z - zsrc ) )
+      fbreak[ isrc ] = self.fbreak.time[ isrc, ircvs[ isrc ] ] 
+  
+    self.fbreak.time = fbreak
+
+    self.open_data()
+
+    for isrc in range( self.srcs.n ) :
+      #print isrc, ircvs[isrc]
+      self.fbinh.seek( 4 * ircvs[ isrc ] * self.nt, os.SEEK_CUR )
+
+      self.d[ isrc, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+                             count= self.nt )
+      self.fbinh.seek( 4 * ( self.rcvs.n - ircvs[isrc] - 1 ) * self.nt,
+                      os.SEEK_CUR )
+  def read_data_samelevel_angle( self, angles ) :
+    ircvs = np.zeros( self.srcs.n, dtype=int )
+    for isrc, zsrc in enumerate( self.srcs.z ) : 
+      zrcvs_possible = zsrc + ( np.tan( angles[ isrc ] ) 
+                              * ( self.rcvs.x - self.srcs.x[ isrc ] ) )
+      #print zsrc, zrcvs_possible 
+      ircvs[ isrc ] = np.argmin( np.abs( self.rcvs.z - zrcvs_possible ) )
+
+    for isrc in range( self.srcs.n ) :
+      #print isrc, ircvs[isrc]
+      self.fbinh.seek( 4 * ircvs[ isrc ] * self.nt, os.SEEK_CUR )
+
+      self.d[ isrc, : ] = np.fromfile( self.fbinh, dtype = np.float32, 
+                             count= self.nt )
+      self.fbinh.seek( 4 * ( self.rcvs.n - ircvs[isrc] - 1 ) * self.nt,
+                      os.SEEK_CUR )
+
+  #}}}}}
+
+
+  
+  def open_data( self, op='r' ): #{{{{{
+    self.fbinh = open( os.path.join( self.fdir, self.fbin ), op+'b' )
+
+  def write_data_ch( self, ich ) :
+    if not self.fbinh :
+      self.open_data( op='w' )
+    self.fbinh.seek( 4 * ich * self.nsamples, os.SEEK_SET ) 
+    self.d.astype( np.float32).tofile( self.fbinh )
+
+  def close_data( self ) :
+    self.fbinh.close()
+
+
+  def write_data_append( self ) : #{{{{{
+    if not self.fbinh :
+      self.open_data() 
+    self.d.astype( np.float32 ).tofile( self.fbinh )
+
+  #}}}}}
+
+
+  def write_data( self ) : #{{{{{
+
+    self.d.astype(np.float32).tofile( os.path.join( self.fdir, self.fbin ))   
+
+  # }}}}}
+
+  def write( self ) : #{{{{{
+    self.write_header()
+    self.write_data()
+
+
+  #}}}}}
+
+  def set_rms( self ) : #{{{{{
+    self.rms = np.sum( self.d**2, axis=-1 ) / self.nt
+  #}}}}}
+
+

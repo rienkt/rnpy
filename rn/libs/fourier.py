@@ -199,6 +199,13 @@ def hanning_taper( din, ntaper ) :
           dout[ i0, i1, : ] = din[ i0, i1, : ] * ftaper
     return dout
 
+def hanning_taper_filter( n, ntaper ) :
+  fwin  = np.hanning(ntaper*2)
+  ftaper = np.concatenate( ( fwin[:ntaper], 
+                             np.ones( n - ntaper *2 ),
+                             fwin[ -ntaper: ]
+                             ))
+  return ftaper
 #=============================================================
 # padding
 #=============================================================

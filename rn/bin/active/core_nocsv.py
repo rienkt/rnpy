@@ -615,10 +615,12 @@ class rn_binary(binary) :
     if self.fbreak.fname is not None : 
       outlines.append( '%s'%( self.fbreak.fname ) )
 
-
+    print( '%s/%s'% ( self.fdir, self.fheader ) )
 
     with open( os.path.join( self.fdir, self.fheader ), 'w' ) as f :
       f.write( '\n'.join(outlines) )
+      print( 'yes, i am open')
+      print( outlines )
 
     self.srcs.write()
     self.rcvs.write()

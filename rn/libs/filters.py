@@ -99,7 +99,7 @@ def time_window_gauss( din, t, ot=0., tsigma=1.0 ) :
 #def rk_time_window( din, top_tshift, top_taper, window_length, bottom_taper ) :
 def time_window_hanning( din, t, tbeg, tend, top_taper, bottom_taper ) :
   if din.ndim == 1 :
-    d = din.reshape( ( 1, din.shape[-1] ) )
+    d = copy.copy(  din.reshape( ( 1, din.shape[-1] ) ) )
   else :
     d = copy.copy( din ) 
   dt = t[1] - t[0]
