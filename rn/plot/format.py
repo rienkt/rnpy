@@ -247,7 +247,8 @@ def remove_axlabels( axs,
                     xh0=None, xh1=None, xv0=None, xv1=None,
                     yh0=None, yh1=None, yv0=None, yv1=None,
                     xaxis = True, yaxis=True, axfmt=None, xlabel_loc='top',
-                    ylabel_loc = 'left') :
+                    ylabel_loc = 'left',
+                    xticklabels = True, yticklabels=True) :
   print( axfmt )
   nv = len( axs )
   try :
@@ -287,13 +288,20 @@ def remove_axlabels( axs,
       for ih in range( xh0, xh1 +1) :
         ax = axs[ iv ][ ih ]
         ax.set_xlabel( '' )
+  if xticklabels :
+    for iv in range( xv0, xv1 +1 ) :
+      for ih in range( xh0, xh1 +1) :
+        ax = axs[ iv ][ ih ]
         ax.set_xticklabels( [  ] )
-
   if yaxis :
     for iv in range( yv0, yv1  + 1) :
       for ih in range( yh0, yh1 + 1) :
         ax = axs[ iv ][ ih ]
         ax.set_ylabel( '' )
+  if yticklabels:
+    for iv in range( yv0, yv1  + 1) :
+      for ih in range( yh0, yh1 + 1) :
+        ax = axs[ iv ][ ih ]
         ax.set_yticklabels( [ ] )
 def merge_axes( ax0, ax1, flag='v' ) :
   #{{{{{

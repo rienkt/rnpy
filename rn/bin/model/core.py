@@ -44,6 +44,9 @@ def read_from_textfile( ftxt ) :
   return lines
 
 def write_to_textfile( ftxt, outlines ) :
+  print( outlines )
+  print('a m')
+  print( ftxt )
   with open( ftxt, 'w' ) as f :
     f.write( '\n'.join( outlines ) )
  
@@ -190,7 +193,9 @@ class Model:
   def write_data_fast( self ) :  
     fbin = os.path.join( self.fdir, self.fbin )
 
-    self.d = self.data.astype( np.int32 )
+    print( self.d.shape )
+    self.d = self.d.astype( np.int32 )
+    print( self.d.shape )
 
     try :
       self.d.T.filled( -9999 ).tofile( fbin )
@@ -316,13 +321,13 @@ class Modelxy:
     if fbin :
       self.fbin = fbin
 
-    
+    print( 'here' )    
     outlines = []
     outlines.append( '%f %f %d'%( self.ox, self.dx, self.nx ) )
     outlines.append( '%f %f %d'%( self.oy, self.dy, self.ny ) )
     outlines.append( '%s'%self.fbin )
-    #print( outlines )
-
+    print( outlines )
+    print( os.path.join( self.fdir, self.fheader ) )
     write_to_textfile( os.path.join( self.fdir, self.fheader ), outlines ) 
 
   def write_data( self ) :
