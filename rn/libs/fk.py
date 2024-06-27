@@ -37,8 +37,8 @@ def rn_fk( din, dt, dx ) :
 
   fd = np.fft.fftshift( np.fft.rfft2( din ), 0 )
 
-  f = np.arange( 0, nt/2 +1 , dtype=np.float ) * df;
-  k = np.arange( 0, nx , dtype=np.float ) * dk - nx/2*dk;
+  f = np.arange( 0, nt/2 +1 , dtype=float ) * df;
+  k = np.arange( 0, nx , dtype=float ) * dk - nx/2*dk;
   
   return fd, f, k
 
@@ -81,7 +81,7 @@ def rn_mask( polyf, polyk, f, k ) :
 
   grid = polypath.contains_points( points ).reshape( (nk, nf) )
 
-  mask = np.ones( grid.shape, dtype=np.float )
+  mask = np.ones( grid.shape, dtype=float )
   mask[ np.where( grid ) ] = 0.
 
 
@@ -108,7 +108,7 @@ def rn_read_poly( fname ) :
     lines = f.readlines() 
 
   f = np.array( [ line.split()[0] for line in lines ], 
-                        dtype=np.float ) 
+                        dtype=float ) 
   k = np.array( [ line.split()[1] for line in lines ], 
-                        dtype=np.float ) 
+                        dtype=float ) 
   return f, k
