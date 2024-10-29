@@ -6,6 +6,7 @@ import os.path
 import os
 import numpy as np
 import rn.bin.active.core_nocsv as rn_bin
+import pandas as pd
       
 def get_dim(input):
     dim=0
@@ -32,8 +33,13 @@ class rn_loc( rn_bin.rn_loc ) :
         self.z = np.fromfile( floc, sep = ' ', count = self.n * 2 
                     ).reshape( [self.n, 2] )[:, 1]
       except :
-        self.x = np.arange( 0, self.n, dtype='f' )*self.d + self.o
-        self.z = np.arange( 0, self.n, dtype='f' )*self.d + self.o
+        try :
+          df = pd.read_csv( floc )
+          self.x = df.x
+          self.y = df.y
+        except :
+          self.x = np.arange( 0, self.n, dtype='f' )*self.d + self.o
+          self.z = np.arange( 0, self.n, dtype='f' )*self.d + self.o
     else:
       print( '%s does not exist'%self.fname ) 
       self.x = np.arange( 0, self.n, dtype='f' )*self.d + self.o
@@ -184,6 +190,8 @@ class FreqdomainData:
       tmpd_imag=np.zeros((self.freqs.n,self.srcs.n,self.rcvs.n),'f')
       input_re.read(tmpd_real)
       input_im.read(tmpd_imag)
+    input_re.close()
+    input_im.close()
 
     self.d=tmpd_real+1.0j*tmpd_imag
 
@@ -227,6 +235,32 @@ class FreqdomainData:
     self.outputim.write(np.float32(np.imag(self.d)))
 
     self.write_close()
+
+  def write_header_only( self, fre=None, frebin=None, fim=None, fimbin=None ) :
+    #print( self.ox, self.oz, self.dx, self.dz )
+
+    with open( fre, 'w' ) as frsf :
+      frsf.write( 'data_format="native_float"\n' )
+      frsf.write( 'n1=%d\n'%self.srcs.n )
+      frsf.write( 'n2=%d\n'%self.rcvs.n )
+      frsf.write( 'o1=%d\n'%self.srcs.o )
+      frsf.write( 'o2=%d\n'%self.rcvs.o )
+      frsf.write( 'd1=%d\n'%self.srcs.d )
+      frsf.write( 'd2=%d\n'%self.rcvs.d )
+      frsf.write( 'in=%s\n'%frebin )
+
+    with open( fim, 'w' ) as frsf :
+      frsf.write( 'data_format="native_float"\n' )
+      frsf.write( 'n1=%d\n'%self.srcs.n )
+      frsf.write( 'n2=%d\n'%self.rcvs.n )
+      frsf.write( 'o1=%d\n'%self.srcs.o )
+      frsf.write( 'o2=%d\n'%self.rcvs.o )
+      frsf.write( 'd1=%d\n'%self.srcs.d )
+      frsf.write( 'd2=%d\n'%self.rcvs.d )
+      frsf.write( 'in=%s\n'%fimbin )
+  def write_bin_only( self, frebin=None, fimbin=None ) :
+    np.real( self.d ).astype( np.float32 ).tofile( frebin )
+    np.imag( self.d ).astype( np.float32 ).tofile( fimbin )
 
   def write_rsf_freq(self):
     self.outputre.write(np.float32(np.real(self.d)))

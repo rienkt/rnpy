@@ -335,17 +335,27 @@ class rn_freq( object ) : #{{{{{
   def initialize( self, val=0.) :
     self.d = np.ones( self.n, dtype=float ) * val
 
-  def read( self ) :
+  def read( self, f=None ) :
+    if f:
+      self.fdir = os.path.dirname(f)
+      self.fname = os.path.basename(f)
+
     with open( os.path.join( self.fdir, self.fname ) ) as f :
       lines = f.read().splitlines()
 
-    self.set_n( len(lines) )
+    
+    #self.set_n( len(lines) )
+    self.set_n( int(lines[0] ) )
 
-    self.d = np.array( [ line.split()[0] for line in lines ],
+    self.d = np.array( [ line.split()[0] for line in lines[1:] ],
                         dtype=float )
 
-  def write( self ) :
+  def write( self, f=None ) :
+    if f:
+      self.fdir = os.path.dirname(f)
+      self.fname = os.path.basename(f)
     outlines = []
+    outlines.append( '%d'%self.n )
     for i in range(self.n) :
       outlines.append( '%f'% self.d[i] ) 
 
@@ -729,7 +739,7 @@ class rn_binary(binary) :
       self.read_data_samelevel()
     else :
       self.d = np.fromfile( os.path.join( self.fdir, self.fbin ), 
-              dtype = dtype ).reshape(self.nc, self.srcs.n, self.rcvs.n, self.nt)
+              dtype = dtype ).reshape( self.srcs.n, self.rcvs.n, self.nt)
   #}}}}}
 
 
