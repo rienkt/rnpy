@@ -197,7 +197,7 @@ def hanning_taper( din, ntaper ) :
       for i0 in range( n0 ) :
         for i1 in range(n1 ) :
           dout[ i0, i1, : ] = din[ i0, i1, : ] * ftaper
-    return dout
+    return dout, ftaper
 
 def hanning_taper_filter( n, ntaper ) :
   fwin  = np.hanning(ntaper*2)

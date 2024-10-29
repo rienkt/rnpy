@@ -44,6 +44,9 @@ def read_from_textfile( ftxt ) :
   return lines
 
 def write_to_textfile( ftxt, outlines ) :
+  print( outlines )
+  print('a m')
+  print( ftxt )
   with open( ftxt, 'w' ) as f :
     f.write( '\n'.join( outlines ) )
  
@@ -86,6 +89,7 @@ class Model:
 
     self.fbin    = 'test.bin'
     self.fheader = 'test.header'
+    self.fbinh = None
 
 
   def initialize( self, val=0.0 ):
@@ -190,7 +194,9 @@ class Model:
   def write_data_fast( self ) :  
     fbin = os.path.join( self.fdir, self.fbin )
 
-    self.d = self.data.astype( np.int32 )
+    print( self.d.shape )
+    self.d = self.d.astype( np.int32 )
+    print( self.d.shape )
 
     try :
       self.d.T.filled( -9999 ).tofile( fbin )
@@ -316,13 +322,13 @@ class Modelxy:
     if fbin :
       self.fbin = fbin
 
-    
+    print( 'here' )    
     outlines = []
     outlines.append( '%f %f %d'%( self.ox, self.dx, self.nx ) )
     outlines.append( '%f %f %d'%( self.oy, self.dy, self.ny ) )
     outlines.append( '%s'%self.fbin )
-    #print( outlines )
-
+    print( outlines )
+    print( os.path.join( self.fdir, self.fheader ) )
     write_to_textfile( os.path.join( self.fdir, self.fheader ), outlines ) 
 
   def write_data( self ) :
@@ -583,6 +589,7 @@ class Modelxyt:
 
     self.fbin    = 'test.bin'
     self.fheader = 'test.header'
+    self.fbinh = None
 
 
   def initialize( self, val=0.0 ):
@@ -661,14 +668,20 @@ class Modelxyt:
     import rn.libs.array as rn_array
     y, iy = rn_array.find_nearest_value( self.y, y )
     ibyte  = np.dtype( self.dtype ).itemsize
-    self.d = np.zeros( self.nx, self.nt, dtype=self.dtype )
+    self.d = np.zeros( ( self.nx, self.nt ), dtype=self.dtype )
     if not self.fbinh :
       self.open_data( op='r' )
-    self.fbinh.seek( ibyte * iy * self.nt, os.SEEK_CUR )
+    self.fbinh.seek( 0, 0 )
+    #print( 'nt', self.nt )
+    self.fbinh.seek( ibyte * iy * self.nt, 0 )
     for ix in range( self.nx ) :
+      #print( ix, self.nx )
+      #print( np.fromfile( self.fbinh, dtype=self.dtype,
+      #                      count = self.nt ).shape )
       self.d[ ix, : ] = np.fromfile( self.fbinh, dtype=self.dtype,
                             count = self.nt )
-      self.fbinh.seek( ibyte *  self.ny * self.nt, os.SEEK_CUR )
+      #if ix < ( self.nx - 1 ):
+      self.fbinh.seek( ibyte *  ( self.ny -1 ) * self.nt, os.SEEK_CUR )
 
   def read( self, fheader=None ):
     self.read_header( fheader )

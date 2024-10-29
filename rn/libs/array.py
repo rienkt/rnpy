@@ -77,12 +77,17 @@ def find_nearest_value( array, vals ) :
 def find_nearest_value_regular( array, vals ) : 
   o = array[0]
   d = array[1]-array[0]
+  n = array.shape[0]
 
   if type(vals) is np.ndarray :
     idxs = np.round( ( vals-o ) /d ).astype( int )
     idxs[ idxs<0 ]  =0
+    idxs = np.minimum( idxs, n )
+    idxs = np.maximum( idxs, 0 )
     return  idxs*d + o, idxs
   else :
     val = vals
     idx = np.round( ( val-o ) / d ).astype( int )
+    idx = min( idx, n )
+    idx = max( idx, 0 )
     return idx*d + o, idx
