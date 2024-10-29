@@ -30,7 +30,7 @@ from scipy import ndimage
 
 
 def rn_moving( data, nsize ) :
-  return ndimage.filters.uniform_filter( data, size = nsize, mode = 'nearest' )
+  return ndimage.filters.uniform_filter( np.ma.masked_invalid(data), size = nsize, mode = 'nearest' )
 
 def rn_gaussian( data, fsigma1, fsigma2 ) :
-  return ndimage.filters.gaussian_filter( data, ( fsigma1, fsigma2 ) )
+  return ndimage.filters.gaussian_filter( np.ma.masked_invalid(data), ( fsigma1, fsigma2 ) )

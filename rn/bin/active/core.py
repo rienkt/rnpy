@@ -1120,7 +1120,7 @@ class rn_binary3c(binary) :
       self.ot = ref.ot
       self.dt = ref.dt
       self.nt = ref.nt 
-      self.nc = self.nc
+      self.nc = ref.nc
 
     self.set_t()
     if flag_init == 1 :

@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import rcParams
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator, LogLocator)
 import matplotlib
+from matplotlib import ticker
 
 rcParams['font.family'] = 'sans-serif'
 rcParams['font.sans-serif'] = ['Arial']
@@ -29,7 +30,7 @@ def add_text( ax, x, y, text, fontsize=12, fontweight='regular',
               bbox_linewidth=0, bbox_style='square',
               valign='center' , rotation=0) :
       position = [ x, y ]
-      print( fontweight )
+      #print( fontweight )
       ax_subtitle = ax.text( -0.1, 0.5, text, 
                fontsize=fontsize, 
                weight=fontweight,
@@ -42,6 +43,7 @@ def add_text( ax, x, y, text, fontsize=12, fontweight='regular',
                transform=ax.transAxes, 
                rotation=rotation )
       ax_subtitle.set_position( position )
+      return ax_subtitle
 
 
 def calc_aspect_from_axis_range( ax ) :
@@ -286,23 +288,35 @@ def remove_axlabels( axs,
   if xaxis  :
     for iv in range( xv0, xv1 +1 ) :
       for ih in range( xh0, xh1 +1) :
-        ax = axs[ iv ][ ih ]
-        ax.set_xlabel( '' )
+        try :
+          ax = axs[ iv ][ ih ]
+          ax.set_xlabel( '' )
+        except :
+          print('ax: %d %d does not exist '%( iv, ih ))
   if xticklabels :
     for iv in range( xv0, xv1 +1 ) :
       for ih in range( xh0, xh1 +1) :
-        ax = axs[ iv ][ ih ]
-        ax.set_xticklabels( [  ] )
+        try :
+          ax = axs[ iv ][ ih ]
+          ax.set_xticklabels( [  ] )
+        except :
+          print('ax: %d %d does not exist '%( iv, ih ))
   if yaxis :
     for iv in range( yv0, yv1  + 1) :
       for ih in range( yh0, yh1 + 1) :
-        ax = axs[ iv ][ ih ]
-        ax.set_ylabel( '' )
+        try :
+          ax = axs[ iv ][ ih ]
+          ax.set_ylabel( '' )
+        except :
+          print('ax: %d %d does not exist '%( iv, ih ))
   if yticklabels:
     for iv in range( yv0, yv1  + 1) :
       for ih in range( yh0, yh1 + 1) :
-        ax = axs[ iv ][ ih ]
-        ax.set_yticklabels( [ ] )
+        try :
+          ax = axs[ iv ][ ih ]
+          ax.set_yticklabels( [ ] )
+        except :
+          print('ax: %d %d does not exist '%( iv, ih ))
 def merge_axes( ax0, ax1, flag='v' ) :
   #{{{{{
   # merge two axis in certain directions
@@ -340,6 +354,8 @@ class FigFormat :
     self.dheights = dheights
     self.aspect = aspect
     self.projection = projection
+    if self.widths is None :
+      self.calc_figsize_widths_heights()
   def calc_figsize_widths_heights( self ) :
     self.figsize, self.widths, self.heights = calc_figsize_widths_heights( 
         self.paperwidth, self.width_ratios, 
@@ -347,6 +363,8 @@ class FigFormat :
         self.dwidth, self.dheight, self.aspect , dwidths=self.dwidths, 
         dheights=self.dheights)
   def create_axes( self, fig, projection=None ) :
+    if self.widths is None :
+      self.calc_figsize_widths_heights()
     axs, caxs = create_axes( fig, self.widths, self.heights, self.left, 
         self.bottom, self.dwidth, self.dheight, dwidths=self.dwidths, 
         dheights=self.dheights, projection=projection )
@@ -361,6 +379,8 @@ class AxesFormat :
   #{{{{{
   def __init__ (self, 
                 xlabel=None, ylabel=None, rlabel=None,
+
+                xlabel_pad = None, ylabel_pad = None,
                 xmin=None, xmax=None,
                 ymin=None, ymax=None, 
                 rmin=None, rmax=None,
@@ -371,6 +391,7 @@ class AxesFormat :
                 flag_xminor=0, flag_yminor=0,flag_rminor=0,
                 xticklabels=None, yticklabels=None,rticklabels=None,
                 xaxis_loc=None, yaxis_loc=None, raxis_loc='None',
+                xticklabels_format = None, yticklabels_format=None,
                 title=None, 
                 subtitle=None, subtitle_position=None,
                 subtitle_dir='h', 
@@ -392,12 +413,15 @@ class AxesFormat :
                 subtitle3_bbox_alpha = 0,
                 xgrid=True, ygrid=True,rgrid=True,
                 grid_linewidth=1, grid_linestyle=':',
-                fontsize=14,
+                fontsize=14, fontweight='regular',
                 vmin=None, vmax=None, cmap='jet',
                 polar=False,
                 ) :
     self.xlabel = xlabel
     self.ylabel = ylabel
+    self.xlabel_pad = xlabel_pad
+    self.ylabel_pad = ylabel_pad
+
     self.xmin   = xmin
     self.xmax   = xmax
     self.ymin   = ymin
@@ -421,6 +445,8 @@ class AxesFormat :
     self.yticklabels = yticklabels
     self.rticklabels = rticklabels
     self.xticklabels = xticklabels
+    self.xticklabels_format = xticklabels_format
+    self.yticklabels_format = yticklabels_format
 
     self.xaxis_loc = xaxis_loc
     self.yaxis_loc = yaxis_loc
@@ -472,6 +498,7 @@ class AxesFormat :
 
     # fontsize
     self.fontsize = fontsize
+    self.fontweight = fontweight
 
 
   def format_axes( self, ax ) :
@@ -482,10 +509,13 @@ class AxesFormat :
 
     if self.polar == False :
       if self.xlabel : 
-        ax.set_xlabel( self.xlabel, fontsize=self.fontsize )
+        ax.set_xlabel( self.xlabel, fontsize=self.fontsize, fontweight=self.fontweight )
+
+
+
 
       if self.ylabel :
-        ax.set_ylabel( self.ylabel, fontsize=self.fontsize)
+        ax.set_ylabel( self.ylabel, fontsize=self.fontsize, fontweight=self.fontweight)
 
 
       if self.xaxis_loc == 'top' :
@@ -511,8 +541,6 @@ class AxesFormat :
       elif self.xticklabels == '' :
         ax.set_xticklabels( self.xticklabels )
 
-
-
       
       ax.tick_params( axis='both', which='major', labelsize=self.fontsize )
 
@@ -530,6 +558,8 @@ class AxesFormat :
       ax.set_yticklabels( self.yticklabels )
     elif self.yticklabels == '' :
       ax.set_yticklabels( self.yticklabels )
+
+
 
     if self.polar == False :
       if self.flag_yminor == 1 :
@@ -570,10 +600,29 @@ class AxesFormat :
         ax.set_ylim( self.ymin, self.ymax )
 
     if self.rmin is not None:
-      print( self.rmin, self.rmax )
+      #print( self.rmin, self.rmax )
       ax.set_rlim( self.rmin, self.rmax )
 
+    if self.fontweight is not None :
+      #print( self.fontweight )
+      ax.set_yticklabels(ax.get_yticks(), weight=self.fontweight)
+      ax.set_xticklabels(ax.get_xticks(), weight=self.fontweight)
+      ax.set_xlabel( ax.get_xlabel(), weight=self.fontweight )
+      ax.set_ylabel( ax.get_ylabel(), weight=self.fontweight )
 
+    if self.xlabel_pad is not None :
+      ax.set_xlabel( ax.get_xlabel(), rotation=0, labelpad=self.xlabel_pad )
+    if self.ylabel_pad is not None :
+      ax.set_ylabel( ax.get_ylabel(), rotation=90, labelpad=self.ylabel_pad )
+
+    # tick labels format
+    if self.xticklabels_format is not None :
+      ax.xaxis.set_major_formatter(
+                ticker.StrMethodFormatter("{x:%s}"%(self.xticklabels_format)) )
+
+    if self.yticklabels_format is not None :
+      ax.yaxis.set_major_formatter(
+                ticker.StrMethodFormatter("{x:%s}"%(self.yticklabels_format)) )
 
     if self.subtitle :
 
