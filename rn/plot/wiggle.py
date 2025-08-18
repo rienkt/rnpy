@@ -189,9 +189,10 @@ def wiggle_simple_irregular( ax, din, x, y,
   #print( 'scale', scale, 'n0', n0 )
 
   if direction == 'h' :
-    shift = x 
+    shift = y 
     for i0 in range( n0 ) :
-      ax.plot( y, din[ i0, : ] * scale + shift[ i0 ], 
+      #print( shift[i0] )
+      ax.plot( x, din[ i0, : ] * scale + shift[ i0 ], 
           linewidth=linewidth, color=linecolors[i0], alpha=linealphas[i0])
       
 

@@ -44,9 +44,9 @@ def read_from_textfile( ftxt ) :
   return lines
 
 def write_to_textfile( ftxt, outlines ) :
-  print( outlines )
-  print('a m')
-  print( ftxt )
+  #print( outlines )
+  #print('a m')
+  #print( ftxt )
   with open( ftxt, 'w' ) as f :
     f.write( '\n'.join( outlines ) )
  
@@ -194,9 +194,9 @@ class Model:
   def write_data_fast( self ) :  
     fbin = os.path.join( self.fdir, self.fbin )
 
-    print( self.d.shape )
+    #print( self.d.shape )
     self.d = self.d.astype( np.int32 )
-    print( self.d.shape )
+    #print( self.d.shape )
 
     try :
       self.d.T.filled( -9999 ).tofile( fbin )
@@ -322,13 +322,13 @@ class Modelxy:
     if fbin :
       self.fbin = fbin
 
-    print( 'here' )    
+    #print( 'here' )    
     outlines = []
     outlines.append( '%f %f %d'%( self.ox, self.dx, self.nx ) )
     outlines.append( '%f %f %d'%( self.oy, self.dy, self.ny ) )
     outlines.append( '%s'%self.fbin )
-    print( outlines )
-    print( os.path.join( self.fdir, self.fheader ) )
+    #print( outlines )
+    #print( os.path.join( self.fdir, self.fheader ) )
     write_to_textfile( os.path.join( self.fdir, self.fheader ), outlines ) 
 
   def write_data( self ) :
@@ -568,8 +568,10 @@ class Modelxyt:
       self.ny = ref.ny
       self.oy = ref.oy
       self.dy = ref.dy
-      self.fdir = ref.fdir
-      self.fheader = ref.fheader
+      if hasattr(ref, 'fdir'):
+        self.fdir = ref.fdir
+      #@if hasattr(ref, 'fheader'):
+      #  self.fheader = ref.fheader
     else :
 
       self.nx = nx
@@ -581,12 +583,14 @@ class Modelxyt:
       self.ny = ny
       self.oy = oy
       self.dy = dy
+      self.fdir = ''
+      #self.fheader = 'test'
     if flag_initialize :
       self.initialize( val=val )
 
     self.set_axis()
 
-
+    self.fdir = ''
     self.fbin    = 'test.bin'
     self.fheader = 'test.header'
     self.fbinh = None

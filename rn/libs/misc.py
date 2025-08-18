@@ -46,3 +46,10 @@ def eprint( *args ) :
 
 def wprint( *args ) :
   print( 'WARNING : ', args )
+
+def mpi_print(*args, sep=' ', end='\n', file=None, flush=True):
+  #if rank == 63 :
+    prefix = f'rank {rank}/{nproc}: '
+    print(prefix + sep.join(str(arg) for arg in args),
+              end=end, file=file, flush=flush)
+

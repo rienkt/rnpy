@@ -57,6 +57,8 @@ class binned_data () :
   def initialize( self, val=0 )  :
     #self.d = np.ones( self.nbin, dtype=float ) * val
     self.mean = np.ones( self.nbin, dtype=float ) * val
+    self.max = np.ones( self.nbin, dtype=float ) * val
+    self.min = np.ones( self.nbin, dtype=float ) * val
     self.logmean = np.ones( self.nbin, dtype=float ) * val
     self.logstd = np.ones( self.nbin, dtype=float ) * val
     self.std = np.ones( self.nbin, dtype=float ) * val
@@ -70,7 +72,10 @@ class binned_data () :
       idxs = np.where( ibins ==ibin ) 
       print( idxs )
       mydata =  data[idxs] 
-      mydata = mydata.compressed()
+      try : 
+        mydata = mydata.compressed()
+      except :
+        pass
       #print( mydata )
       mydata = mydata[~np.isnan(mydata)]
       mydata = mydata[np.abs(mydata)>1e-20] 
@@ -179,7 +184,10 @@ class binned_data_sliding( binned_data ) :
                           & ( x <= self.bins1[ibin] )  )
       #print( idxs, data.shape )
       mydata =  data[idxs] 
-      mydata = mydata.compressed()
+      try : 
+        mydata = mydata.compressed()
+      except :
+        pass
       #print( mydata )
       mydata = mydata[~np.isnan(mydata)]
       mydata = mydata[np.abs(mydata)>1e-20] 
@@ -188,6 +196,8 @@ class binned_data_sliding( binned_data ) :
         self.mean[ibin] = np.ma.mean(mydata ) 
         self.std[ibin] = np.ma.std(mydata ) 
         self.median[ibin] = np.ma.median(mydata ) 
+        self.max[ibin] = np.ma.max(mydata ) 
+        self.min[ibin] = np.ma.min(mydata ) 
         if min(mydata) > 0 :
         # the next line will cuase a problem if mydata contains negative valuye
           self.logmean[ibin] = np.ma.exp( np.ma.mean(np.ma.log(mydata ) ) )
@@ -199,6 +209,8 @@ class binned_data_sliding( binned_data ) :
     self.logmean = np.ma.masked_equal( self.logmean, 0 )
     self.logstd = np.ma.masked_equal( self.logstd, 0 )
     self.std = np.ma.masked_equal( self.std, 0 )
+    self.max = np.ma.masked_equal( self.max, 0 )
+    self.min = np.ma.masked_equal( self.min, 0 )
     #print( 'standard', self.std )
  
   def calc_stats_n( self, data, x ) : # data.ndim = x.ndim + 1
@@ -213,7 +225,10 @@ class binned_data_sliding( binned_data ) :
       #print( data.shape )
       #print( ixs, iys )
       mydata =  data[:,ixs, iys] 
-      mydata = mydata.compressed()
+      try :
+        mydata = mydata.compressed()
+      except :
+        pass
       #print( mydata )
       mydata = mydata[~np.isnan(mydata)]
       mydata = mydata[np.abs(mydata)>1e-20] 

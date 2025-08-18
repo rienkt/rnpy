@@ -1,5 +1,6 @@
 import numpy as np 
 from matplotlib import rcParams
+import matplotlib.pyplot as plt 
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator, LogLocator)
 import matplotlib
 from matplotlib import ticker
@@ -23,6 +24,13 @@ subtitles = [ '(a)', '(b)', '(c)', '(d)', '(e)',
               '(f)', '(g)', '(h)', '(i)',  '(j)',
               '(k)', '(l)', '(m)','(n)', '(o)', '(p)','(q)','(r)' ]
 
+
+def set_default_settings() :
+   plt.rcParams.update({
+    'font.size': 16,
+    'font.family': 'Arial',
+    'font.weight': 'bold'
+  })
 
 
 def add_text( ax, x, y, text, fontsize=12, fontweight='regular', 
@@ -392,6 +400,7 @@ class AxesFormat :
                 xticklabels=None, yticklabels=None,rticklabels=None,
                 xaxis_loc=None, yaxis_loc=None, raxis_loc='None',
                 xticklabels_format = None, yticklabels_format=None,
+                xticklabel_pad = None, yticklabel_pad = None,
                 title=None, 
                 subtitle=None, subtitle_position=None,
                 subtitle_dir='h', 
@@ -447,6 +456,8 @@ class AxesFormat :
     self.xticklabels = xticklabels
     self.xticklabels_format = xticklabels_format
     self.yticklabels_format = yticklabels_format
+    self.xticklabel_pad = xticklabel_pad
+    self.yticklabel_pad = yticklabel_pad
 
     self.xaxis_loc = xaxis_loc
     self.yaxis_loc = yaxis_loc
@@ -544,15 +555,23 @@ class AxesFormat :
       
       ax.tick_params( axis='both', which='major', labelsize=self.fontsize )
 
-    if type( self.xticks ) is np.ndarray :
-      ax.set_xticks( self.xticks )
     if type( self.xticks_minor ) is np.ndarray :
       ax.set_xticks( self.xticks_minor, minor=True )
-    if type( self.yticks ) is np.ndarray :
-      ax.set_yticks( self.yticks )
-
     if type( self.yticks_minor ) is np.ndarray :
       ax.set_yticks( self.yticks_minor, minor=True )
+
+
+    for axis in ('x', 'y'):
+      # set ticks
+      ticks = getattr(self, f"{axis}ticks")
+      if isinstance(ticks, np.ndarray):
+          getattr(ax, f"set_{axis}ticks")(ticks)
+      # set tick label pad
+      pad_value = getattr(self, f"{axis}ticklabel_pad", None)
+      if pad_value is not None:
+        ax.tick_params(axis=axis, pad=pad_value)
+
+
       #self.flag_yminor = 2
     if self.yticklabels :
       ax.set_yticklabels( self.yticklabels )
