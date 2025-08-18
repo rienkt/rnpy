@@ -108,7 +108,7 @@ class Model:
     if fheader :
       self.fheadeer = fheader
 
-    self.set_fname( fheader )
+      self.set_fname( fheader )
     
     lines = read_from_textfile( os.path.join( self.fdir, self.fheader ) ) 
 
@@ -611,9 +611,10 @@ class Modelxyt:
   def read_header( self, fheader=None, dtype=np.float32 ) :
     if fheader :
       self.fheadeer = fheader
+      self.set_fname( fheader )
+   
+    #print( 'dir', 'bin', self.fdir, self.fheader )
 
-    self.set_fname( fheader )
-    
     lines = read_from_textfile( os.path.join( self.fdir, self.fheader ) ) 
 
     # read x-coordinate
@@ -654,38 +655,63 @@ class Modelxyt:
     self.data = self.d
 
   def read_data_at_x( self, x ) :
-    fbin = os.path.join( self.fdir, self.fbin )
+  
+    try : 
+      self.set_x_fbin(x)
+      fbin = os.path.join( self.fdir, self.fbin )
+      print( 'read from xonly file' )
+      self.d = np.ma.masked_less_equal( 
+                    np.fromfile( fbin, dtype = self.dtype
+                    ).reshape( self.ny,  self.nt ), -9999.  )
+      print( self.d )
 
-    import rn.libs.array as rn_array
-    x, ix = rn_array.find_nearest_value( self.x, x )
-    ibyte  = np.dtype( self.dtype ).itemsize
+    except :
+      print( 'extract from all volume' )
+      #self.set_fname( self.fheader)
+      self.read_header(  )
+      fbin = os.path.join( self.fdir, self.fbin )
+      import rn.libs.array as rn_array
+      x, ix = rn_array.find_nearest_value( self.x, x )
+      ibyte  = np.dtype( self.dtype ).itemsize
 
-    self.d = np.ma.masked_less_equal( 
-                  np.fromfile( fbin, dtype = self.dtype,
-                    count=self.ny*self.nt, 
-                    offset=self.ny*self.nt*ix*ibyte
-                  ).reshape( self.ny,  self.nt ), -9999. )
+      self.d = np.ma.masked_less_equal( 
+                    np.fromfile( fbin, dtype = self.dtype,
+                      count=self.ny*self.nt, 
+                      offset=self.ny*self.nt*ix*ibyte
+                    ).reshape( self.ny,  self.nt ), -9999. )
 
   def read_data_at_y( self, y ) :
-    fbin = os.path.join( self.fdir, self.fbin )
+    try : 
+      self.set_y_fbin(y)
+      fbin = os.path.join( self.fdir, self.fbin )
+      print( fbin )
+      print( 'read from yonly file' )
+      self.d = np.ma.masked_less_equal( 
+                    np.fromfile( fbin, dtype = self.dtype
+                    ).reshape( self.nx,  self.nt ), -9999.  )
+    except :
+      print( 'extract from all volume' )
+      self.read_header()
+      fbin = os.path.join( self.fdir, self.fbin )
 
-    import rn.libs.array as rn_array
-    y, iy = rn_array.find_nearest_value( self.y, y )
-    ibyte  = np.dtype( self.dtype ).itemsize
-    self.d = np.zeros( ( self.nx, self.nt ), dtype=self.dtype )
-    if not self.fbinh :
-      self.open_data( op='r' )
-    self.fbinh.seek( 0, 0 )
-    #print( 'nt', self.nt )
-    self.fbinh.seek( ibyte * iy * self.nt, 0 )
-    for ix in range( self.nx ) :
-      #print( ix, self.nx )
-      #print( np.fromfile( self.fbinh, dtype=self.dtype,
-      #                      count = self.nt ).shape )
-      self.d[ ix, : ] = np.fromfile( self.fbinh, dtype=self.dtype,
-                            count = self.nt )
-      #if ix < ( self.nx - 1 ):
-      self.fbinh.seek( ibyte *  ( self.ny -1 ) * self.nt, os.SEEK_CUR )
+      import rn.libs.array as rn_array
+      y, iy = rn_array.find_nearest_value( self.y, y )
+      ibyte  = np.dtype( self.dtype ).itemsize
+      self.d = np.zeros( ( self.nx, self.nt ), dtype=self.dtype )
+      if not self.fbinh :
+        self.open_data( op='r' )
+      self.fbinh.seek( 0, 0 )
+      #print( 'nt', self.nt )
+      self.fbinh.seek( ibyte * iy * self.nt, 0 )
+      for ix in range( self.nx ) :
+        #print( ix, self.nx )
+        #print( np.fromfile( self.fbinh, dtype=self.dtype,
+                              #count = self.nt ).shape )
+        self.d[ ix, : ] = np.fromfile( self.fbinh, dtype=self.dtype,
+                              count = self.nt )
+        #if ix < ( self.nx - 1 ):
+        self.fbinh.seek( ibyte *  ( self.ny -1 ) * self.nt, os.SEEK_CUR )
+    print( self.d.max() )
 
   def read( self, fheader=None ):
     self.read_header( fheader )
@@ -740,6 +766,37 @@ class Modelxyt:
     self.write_header( fheader, fbin )
     self.write_data()
 
+  def set_x_fbin( self, x ) :
+    #self.read_header(  )
+    self.fbin = self.fbin.replace( '.bin', '_x%.3f.bin'%x ) 
+  def set_y_fbin( self, y ) :
+    #self.read_header(  )
+    self.fbin = self.fbin.replace( '.bin', '_y%.3f.bin'%y ) 
+
+  def write_data_at_x( self, x,  fbin=None ) :
+    
+    if fbin :
+      self.fbin = fbin
+    else :
+      self.set_x_fbin(x) 
+    fbin = os.path.join( self.fdir, self.fbin ) 
+    try :
+      self.d.filled( -9999 ).tofile( fbin )
+    except :
+      self.d.tofile( fbin )
+
+  def write_data_at_y( self, y,  fbin=None ) :
+    
+    if fbin :
+      self.fbin = fbin
+    else :
+      self.set_y_fbin(y) 
+    fbin = os.path.join( self.fdir, self.fbin ) 
+#    print( 'writing', self.d.max() )
+    try :
+      self.d.filled( -9999 ).tofile( fbin )
+    except :
+      self.d.tofile( fbin )
   def set_axis( self ) :
     self.x = np.arange( 0, self.nx, dtype=float ) * self.dx + self.ox
     self.y = np.arange( 0, self.ny, dtype=float ) * self.dy + self.oy

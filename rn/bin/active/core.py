@@ -335,17 +335,27 @@ class rn_freq( object ) : #{{{{{
   def initialize( self, val=0.) :
     self.d = np.ones( self.n, dtype=float ) * val
 
-  def read( self ) :
+  def read( self, f=None ) :
+    if f:
+      self.fdir = os.path.dirname(f)
+      self.fname = os.path.basename(f)
+
     with open( os.path.join( self.fdir, self.fname ) ) as f :
       lines = f.read().splitlines()
 
-    self.set_n( len(lines) )
+    
+    #self.set_n( len(lines) )
+    self.set_n( int(lines[0] ) )
 
-    self.d = np.array( [ line.split()[0] for line in lines ],
+    self.d = np.array( [ line.split()[0] for line in lines[1:] ],
                         dtype=float )
 
-  def write( self ) :
+  def write( self, f=None ) :
+    if f:
+      self.fdir = os.path.dirname(f)
+      self.fname = os.path.basename(f)
     outlines = []
+    outlines.append( '%d'%self.n )
     for i in range(self.n) :
       outlines.append( '%f'% self.d[i] ) 
 
@@ -455,7 +465,7 @@ class binary( ) :
     self.offsets = rn_loc( noffset )
     #}}}}}
   
-  def set_offset2d( self, sign=0 ) : #{{{{{
+  def set_offset2d_xy( self, sign=0 ) : #{{{{{
 
     if self.isrcs.ndim > 1 :
       rrx, ssx = np.meshgrid( self.rcvs.x, self.srcs.x ) 
@@ -467,6 +477,22 @@ class binary( ) :
       ssy = self.srcs.y[ self.isrcs ]
 
     self.offset2d = np.sqrt( ( rry-ssy ) **2 +( rrx-ssx ) **2  ) 
+    if sign == 1 :
+      self.offset2d *= np.sign( rrx-ssx )
+
+    #}}}}}
+  def set_offset2d_xz( self, sign=0 ) : #{{{{{
+
+    if self.isrcs.ndim > 1 :
+      rrx, ssx = np.meshgrid( self.rcvs.x, self.srcs.x ) 
+      rrz, ssz = np.meshgrid( self.rcvs.z, self.srcs.z ) 
+    else :
+      rrx = self.rcvs.x[ self.ircvs ]
+      rrz = self.rcvs.z[ self.ircvs ]
+      ssx = self.srcs.x[ self.isrcs ]
+      ssz = self.srcs.z[ self.isrcs ]
+
+    self.offset2d = np.sqrt( ( rrz-ssz ) **2 +( rrx-ssx ) **2  ) 
     if sign == 1 :
       self.offset2d *= np.sign( rrx-ssx )
 
@@ -713,7 +739,7 @@ class rn_binary(binary) :
       self.read_data_samelevel()
     else :
       self.d = np.fromfile( os.path.join( self.fdir, self.fbin ), 
-              dtype = dtype ).reshape(self.nc, self.srcs.n, self.rcvs.n, self.nt)
+              dtype = dtype ).reshape( self.srcs.n, self.rcvs.n, self.nt)
   #}}}}}
 
 

@@ -46,12 +46,12 @@ def mask( polyx, polyy, x, y ) :
 
   polypath = mplpath.Path( poly_verts )
   
-  print xx.shape
+  #print xx.shape
 
 #  grid = polypath.contains_points( points ).reshape( (ny, nx) )
   grid = polypath.contains_points( points ).reshape( (ny, nx) ).T
 
-  mask = np.ones( grid.shape, dtype=np.float )
+  mask = np.ones( grid.shape, dtype=float )
   mask[ np.where( grid ) ] = 0.
 
 
@@ -68,8 +68,8 @@ def mask_hanning( x, z, ztop, ztaper, nztops=None) :
   nx = len(x)
   nz = len(z)
   dz = z[1] - z[0]
-  nztaper = np.int( ztaper/dz )
-  mask = np.zeros( ( nx, nz ), dtype=np.float )
+  nztaper = int( ztaper/dz )
+  mask = np.zeros( ( nx, nz ), dtype=float )
   if type(z) is float :
     nztop = np.argmin( np.abs( z-ztop) )
 
@@ -83,7 +83,7 @@ def mask_hanning( x, z, ztop, ztaper, nztops=None) :
         nztop = nztops[ix] 
       else :
         nztop = np.argmin( np.abs( z - ztop[ix] ) )
-      nztaper = np.int( ztaper/dz )
+      nztaper = int( ztaper/dz )
 
       mask[ ix, nztop:(nztop+nztaper) ] = np.hanning( nztaper*2 )[:nztaper] 
       mask[ ix, (nztop+nztaper): ] = 1.
