@@ -32,6 +32,12 @@ def set_default_settings() :
     'font.weight': 'bold'
   })
 
+def set_dm_settings() :
+   plt.rcParams.update({
+    'font.size': 16,
+    'font.family': 'Arial',
+    'font.weight': 'bold'
+  })
 
 def add_text( ax, x, y, text, fontsize=12, fontweight='regular', 
               color='k', bbox_alpha=0.5, halign='center',
@@ -232,21 +238,49 @@ def create_axes( fig, widths, heights,  left,  bottom,  dwidth, dheight, dwidths
 
   #print( bottoms )
 
+  caxs = np.empty((nver, nhor), dtype=object)
+
+  if projection is None:
+    axs = np.array(
+      [
+        [
+          fig.add_axes([lefts[ihor], bottoms[iver],
+                        widths[ihor], heights[iver]])
+          for ihor in range(nhor)
+        ]
+        for iver in range(nver)
+      ],
+      dtype=object
+    )
+  else:
+    axs = np.array(
+      [
+        [
+          fig.add_axes([lefts[ihor], bottoms[iver],
+                        widths[ihor], heights[iver]],
+                       projection=projection)
+          for ihor in range(nhor)
+        ]
+        for iver in range(nver)
+      ],
+      dtype=object
+    )
+
 
   # create empty 2d array
-  axs=[]
-  caxs = [ [ None for _ in range( nhor )] for _ in range( nver ) ]
-  for iver in range( nver ) :
-    #for ihor in range( nhor ) :
-    if projection is None :
-      axs.append( [ fig.add_axes( [ lefts[ihor], bottoms[iver], 
-                                    widths[ihor], heights[iver] ] ) for ihor
-                  in range( nhor)  ]  )
-    else :
-      axs.append( [ fig.add_axes( [ lefts[ihor], bottoms[iver], 
-                                    widths[ihor], heights[iver] ],
-                                   projection=projection) for ihor
-                  in range( nhor)  ]  )
+  #axs=[]
+  #caxs = [ [ None for _ in range( nhor )] for _ in range( nver ) ]
+  #for iver in range( nver ) :
+  #  #for ihor in range( nhor ) :
+  #  if projection is None :
+  #    axs.append( [ fig.add_axes( [ lefts[ihor], bottoms[iver], 
+  #                                  widths[ihor], heights[iver] ] ) for ihor
+  #                in range( nhor)  ]  )
+  #  else :
+  #    axs.append( [ fig.add_axes( [ lefts[ihor], bottoms[iver], 
+  #                                  widths[ihor], heights[iver] ],
+  #                                 projection=projection) for ihor
+  #                in range( nhor)  ]  )
   return  axs, caxs
  
 
@@ -260,9 +294,9 @@ def remove_axlabels( axs,
                     ylabel_loc = 'left',
                     xticklabels = True, yticklabels=True) :
   print( axfmt )
-  nv = len( axs )
+  nv = axs.shape[0] #len( axs )
   try :
-    nh = len( axs[0] )
+    nh = axs.shape[1] #len( axs[0] )
   except :
     nh = 1
   if axfmt : 
@@ -297,7 +331,7 @@ def remove_axlabels( axs,
     for iv in range( xv0, xv1 +1 ) :
       for ih in range( xh0, xh1 +1) :
         try :
-          ax = axs[ iv ][ ih ]
+          ax = axs[ iv , ih ]
           ax.set_xlabel( '' )
         except :
           print('ax: %d %d does not exist '%( iv, ih ))
@@ -305,7 +339,7 @@ def remove_axlabels( axs,
     for iv in range( xv0, xv1 +1 ) :
       for ih in range( xh0, xh1 +1) :
         try :
-          ax = axs[ iv ][ ih ]
+          ax = axs[ iv , ih ]
           ax.set_xticklabels( [  ] )
         except :
           print('ax: %d %d does not exist '%( iv, ih ))
@@ -313,7 +347,7 @@ def remove_axlabels( axs,
     for iv in range( yv0, yv1  + 1) :
       for ih in range( yh0, yh1 + 1) :
         try :
-          ax = axs[ iv ][ ih ]
+          ax = axs[ iv , ih ]
           ax.set_ylabel( '' )
         except :
           print('ax: %d %d does not exist '%( iv, ih ))
@@ -321,7 +355,7 @@ def remove_axlabels( axs,
     for iv in range( yv0, yv1  + 1) :
       for ih in range( yh0, yh1 + 1) :
         try :
-          ax = axs[ iv ][ ih ]
+          ax = axs[ iv , ih ]
           ax.set_yticklabels( [ ] )
         except :
           print('ax: %d %d does not exist '%( iv, ih ))
@@ -624,8 +658,12 @@ class AxesFormat :
 
     if self.fontweight is not None :
       #print( self.fontweight )
-      ax.set_yticklabels(ax.get_yticks(), weight=self.fontweight)
-      ax.set_xticklabels(ax.get_xticks(), weight=self.fontweight)
+      for lbl in ax.get_yticklabels():
+        lbl.set_fontweight(self.fontweight)
+      for lbl in ax.get_xticklabels():
+        lbl.set_fontweight(self.fontweight)
+      #ax.set_yticklabels(ax.get_yticks(), weight=self.fontweight)
+      #ax.set_xticklabels(ax.get_xticks(), weight=self.fontweight)
       ax.set_xlabel( ax.get_xlabel(), weight=self.fontweight )
       ax.set_ylabel( ax.get_ylabel(), weight=self.fontweight )
 

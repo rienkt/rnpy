@@ -64,6 +64,12 @@ class binned_data () :
     self.std = np.ones( self.nbin, dtype=float ) * val
     self.median = np.ones( self.nbin, dtype=float ) * val
     self.nbins = np.ones( self.nbin, dtype=int )
+    self.q05 = np.ones( self.nbin, dtype=float ) * val
+    self.q10 = np.ones( self.nbin, dtype=float ) * val
+    self.q25 = np.ones( self.nbin, dtype=float ) * val
+    self.q75 = np.ones( self.nbin, dtype=float ) * val
+    self.q90 = np.ones( self.nbin, dtype=float ) * val
+    self.q95 = np.ones( self.nbin, dtype=float ) * val
   def calc_stats( self, data, x ) :
     ibins = ( ( x- self.obin ) / self.dbin ).astype( 'int' )
     #print( ibins[100:105] )
@@ -84,23 +90,40 @@ class binned_data () :
         self.mean[ibin] = np.ma.mean(mydata ) 
         self.std[ibin] = np.ma.std(mydata ) 
         self.median[ibin] = np.ma.median(mydata ) 
+        self.q95[ibin], self.q05[ibin] = np.percentile( mydata, [95, 5] )
+        self.q90[ibin], self.q10[ibin] = np.percentile( mydata, [90, 10] )
+        self.q75[ibin], self.q25[ibin] = np.percentile( mydata, [75, 25]   )
+
+
         if min(mydata) > 0 :
         # the next line will cuase a problem if mydata contains negative valuye
           self.logmean[ibin] = np.ma.exp( np.ma.mean(np.ma.log(mydata ) ) )
           self.logstd[ibin] = np.ma.std( np.ma.log( mydata )  )
         else :
           print( 'we do not compute logmean and logstd, as min(mydata) < 0')
+
     self.mean = np.ma.masked_equal( self.mean, 0 )
     self.median = np.ma.masked_equal( self.median, 0 )
     self.logmean = np.ma.masked_equal( self.logmean, 0 )
     self.logstd = np.ma.masked_equal( self.logstd, 0 )
     self.std = np.ma.masked_equal( self.std, 0 )
+    self.q05 = np.ma.masked_equal( self.q05, 0 )
+    self.q10 = np.ma.masked_equal( self.q10, 0 )
+    self.q25 = np.ma.masked_equal( self.q25, 0 )
+    self.q75 = np.ma.masked_equal( self.q75, 0 )
+    self.q90 = np.ma.masked_equal( self.q90, 0 )
+    self.q95 = np.ma.masked_equal( self.q95, 0 )
     #print( 'standard', self.std )
  
   def write( self, f ) :
     df = pd.DataFrame({ 'bin': self.bins, 'mean': self.mean,
                   'median': self.median, 'std': self.std,
-                  'logmean': self.logmean, 'logstd':self.logstd } )
+                  'logmean': self.logmean, 'logstd':self.logstd,
+                  'q05': self.q05, 'q10': self.q10,
+                  'q25': self.q25, 'q75': self.q75,
+                  'q90': self.q90, 'q95': self.q95,
+                  } )
+    #print( df )
     df.to_csv( f )
   def read( self, f ) :
     print( f )
@@ -110,11 +133,19 @@ class binned_data () :
     self.median = df['median'].to_numpy()
     self.logmean = df['logmean'].to_numpy()
     self.logstd = df['logstd'].to_numpy()
+    self.q05 = df['q05'].to_numpy()
+    self.q10 = df['q10'].to_numpy()
+    self.q25 = df['q25'].to_numpy()  
+    self.q75 = df['q75'].to_numpy()
+    self.q90 = df['q90'].to_numpy()
+    self.q95 = df['q95'].to_numpy()
+
     try :
       self.std = df['std'].to_numpy()
     except :
       self.std = 0.
 
+    #print( 'reading csv file', len( df ) , self.median.shape, self.std.shape )
 
 
 class binned_data_2d () :
@@ -198,6 +229,12 @@ class binned_data_sliding( binned_data ) :
         self.median[ibin] = np.ma.median(mydata ) 
         self.max[ibin] = np.ma.max(mydata ) 
         self.min[ibin] = np.ma.min(mydata ) 
+        self.q95[ibin], self.q05[ibin] = np.percentile( mydata, [95, 5] )
+        self.q90[ibin], self.q10[ibin] = np.percentile( mydata, [90, 10] )
+        self.q75[ibin], self.q25[ibin] = np.percentile( mydata, [75, 25] )
+        #print(' q05',  self.q75[ibin], self.q25[ibin]  )
+
+
         if min(mydata) > 0 :
         # the next line will cuase a problem if mydata contains negative valuye
           self.logmean[ibin] = np.ma.exp( np.ma.mean(np.ma.log(mydata ) ) )
@@ -211,9 +248,17 @@ class binned_data_sliding( binned_data ) :
     self.std = np.ma.masked_equal( self.std, 0 )
     self.max = np.ma.masked_equal( self.max, 0 )
     self.min = np.ma.masked_equal( self.min, 0 )
+    self.q95 = np.ma.masked_equal( self.q95, 0 )
+    self.q90 = np.ma.masked_equal( self.q90, 0 )
+    self.q75 = np.ma.masked_equal( self.q75, 0 )
+    self.q25 = np.ma.masked_equal( self.q25, 0 )
+    self.q10 = np.ma.masked_equal( self.q10, 0 )
+    self.q05 = np.ma.masked_equal( self.q05, 0 )
+
     #print( 'standard', self.std )
  
-  def calc_stats_n( self, data, x ) : # data.ndim = x.ndim + 1
+  def calc_stats_n( self, data, x ) : # data.ndim = x.ndim + 1 (i.e. 100 realizations)
+
     #ibins = ( ( x- self.obin ) / self.dbin ).astype( 'int' )
     for ibin in range( self.nbin ) :
       #print( self.bins0[ibin]  )
@@ -237,6 +282,10 @@ class binned_data_sliding( binned_data ) :
         self.mean[ibin] = np.ma.mean(mydata ) 
         self.std[ibin] = np.ma.std(mydata ) 
         self.median[ibin] = np.ma.median(mydata ) 
+        self.q95[ibin], self.q05[ibin] = np.percentile( mydata, [95, 5] )
+        self.q90[ibin], self.q10[ibin] = np.percentile( mydata, [90, 10] )
+        self.q75[ibin], self.q25[ibin] = np.percentile( mydata, [75, 25] )
+        #print(' q05',  self.q75[ibin], self.q25[ibin]  )
         if min(mydata) > 0 :
         # the next line will cuase a problem if mydata contains negative valuye
           self.logmean[ibin] = np.ma.exp( np.ma.mean(np.ma.log(mydata ) ) )
@@ -248,4 +297,11 @@ class binned_data_sliding( binned_data ) :
     self.logmean = np.ma.masked_equal( self.logmean, 0 )
     self.logstd = np.ma.masked_equal( self.logstd, 0 )
     self.std = np.ma.masked_equal( self.std, 0 )
+    self.q95 = np.ma.masked_equal( self.q95, 0 ) 
+    self.q90 = np.ma.masked_equal( self.q90, 0 )
+    self.q75 = np.ma.masked_equal( self.q75, 0 )
+    self.q25 = np.ma.masked_equal( self.q25, 0 )
+    self.q10 = np.ma.masked_equal( self.q10, 0 )
+    self.q05 = np.ma.masked_equal( self.q05, 0 )
+
     #print( 'standard', self.std )
