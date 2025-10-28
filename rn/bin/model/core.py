@@ -56,7 +56,8 @@ class Model:
   def __init__(self, ref=None, 
                      oz=0., dz=1., nz=1,
                      ox=0., dx=1., nx=1, val=0.,
-                     flag_initialize = True):
+                     initialize=True,
+                     flag_initialize = None):
     if ref :
       self.nx = ref.nx
       self.ox = ref.ox
@@ -81,7 +82,9 @@ class Model:
       self.oz = oz
       self.dz = dz
 
-    if flag_initialize == True :
+    if flag_initialize is not None :
+      initialize = flag_initialize
+    if initialize == True:
       self.initialize( val=val )
 
     self.set_axis()
@@ -227,7 +230,10 @@ class Modelxy:
 #{{{{{
   def __init__(self, ref=None, 
                      oy=0., dy=1., ny=1,
-                     ox=0., dx=1., nx=1, val=0.):
+                     ox=0., dx=1., nx=1, val=0., 
+                     initialize=True,
+                     flag_initialize=None,
+                     ):
     if ref :
       self.nx = ref.nx
       self.ox = ref.ox
@@ -248,7 +254,14 @@ class Modelxy:
       self.ny = ny
       self.oy = oy
       self.dy = dy
-    self.initialize( val=val )
+
+
+    if flag_initialize is not None :
+      initialize = flag_initialize
+    if flag_initialize is not None :
+      initialize = flag_initialize
+    if initialize :
+      self.initialize( val=val )
 
     self.set_axis()
 
@@ -557,7 +570,9 @@ class Modelxyt:
                      ot=0., dt=1., nt=1,
                      oy=0., dy=1., ny=1,
                      ox=0., dx=1., nx=1, val=0.,
-                     flag_initialize = True ):
+                     flag_initialize=None,
+                     initialize = True,
+                      ):
     if ref :
       self.nx = ref.nx
       self.ox = ref.ox
@@ -585,7 +600,9 @@ class Modelxyt:
       self.dy = dy
       self.fdir = ''
       #self.fheader = 'test'
-    if flag_initialize :
+    if flag_initialize is not None :
+      initialize = flat_initialize
+    if initialize :
       self.initialize( val=val )
 
     self.set_axis()

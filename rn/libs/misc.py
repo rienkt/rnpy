@@ -34,6 +34,18 @@ import sys
 #import rk.bin.active.bin as rk_bin
 #import rk.bin.active.process as rk_process
 
+
+
+try :
+  from mpi4py import MPI
+
+  comm = MPI.COMM_WORLD
+  nproc = comm.Get_size()
+  rank = comm.Get_rank()
+
+except :
+  print( 'warning: mpi4py does not exist' )
+
 #==============================================================================
 #                                                        CLASSES / FUNCTIONS
 #==============================================================================
