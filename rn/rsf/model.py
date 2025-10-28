@@ -96,8 +96,8 @@ class Model:
       frsf.write( 'n2=%d\n'%self.nx )
       frsf.write( 'o1=%d\n'%self.oz )
       frsf.write( 'o2=%d\n'%self.ox )
-      frsf.write( 'd1=%d\n'%self.dz )
-      frsf.write( 'd2=%d\n'%self.dx )
+      frsf.write( 'd1=%f\n'%self.dz )
+      frsf.write( 'd2=%f\n'%self.dx )
       frsf.write( 'in=%s\n'%fbin )
 
 

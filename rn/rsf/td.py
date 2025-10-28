@@ -1136,3 +1136,68 @@ class SourceWavelet:
     self.d=np.transpose(self.d,[2,0,1])
 
 
+class SourceWaveletAcoustic:
+  def __init__(self, ref=None, 
+                     nsrc=1,   nt=1, dsrc=1.,  dt=1.,
+                     osrc=0., ot=0.):
+    if ref is not None :
+      self.nsrc = ref.nsrc;  self.nt = ref.nt; 
+      self.dsrc = ref.dsrc;  self.dt = ref.dt; 
+      self.osrc = ref.osrc;  self.ot = ref.ot;
+    else :
+      self.nsrc = nsrc;  self.nt = nt; 
+      self.dsrc = dsrc;  self.dt = dt; 
+      self.osrc = osrc;  self.ot = ot;
+    self.ndim = 3
+    self.axis = ['t', 'r']
+    self.initialise(0.)
+  def get_header(self, input=None, f=None ):
+    if input is None :
+      input = rsf.Input( f )
+    self.ndim = get_dim( input )
+
+    self.nsrc = input.int('n1' )
+    self.nt   = input.int('n2')
+    self.dsrc = input.float( 'd1' )
+    self.dt   = input.float('d2')
+    self.osrc = input.float( 'o1' )
+    self.ot   = input.float('o2')
+    self.set_t()
+  def set_t( self ) :
+    self.t = self.ot + np.arange( self.nt, dtype=float ) * self.dt
+  def initialize(self, val=0.):
+    self.d = val * np.ones( ( self.nt, self.nsrc), dtype=np.float32 )
+  def initialise(self, val=0.):
+    self.initialize( val )
+  def return_header(self):
+    return {'nsrc': self.nsrc,'nt':self.nt,
+            'osrc': self.osrc,'ot':self.ot,
+            'dsrc': self.dsrc,'dt':self.dt}
+  def read_rsf( self, input=None, f=None ):
+    self.read( input=input, f=f )
+  def read(self,input=None, f=None):
+    if input is None :
+      input = rsf.Input( f )
+    self.get_header(input)
+    self.initialise()
+    input.read(self.d)
+  def write_rsf( self, output=None, f=None ):
+    self.write( output=output, f=f )
+  def write(self, output=None, f=None ):
+    if output is None :
+      output = rsf.Output( f )
+    output.put('n1',self.nsrc)
+    output.put('n2',self.nt)
+    output.put('d1',self.dsrc)
+    output.put('d2',self.dt)
+    output.put('o1',self.osrc)
+    output.put('o2',self.ot)
+    output.write(np.float32(self.d))
+    output.close()
+  def tcs2cst(self):
+    self.d=np.transpose(self.d,[1,0])
+    self.axis=['s','t']  
+  def cst2tcs(self):
+    self.d=np.transpose(self.d,[0,1])
+
+
