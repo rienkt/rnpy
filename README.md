@@ -37,7 +37,7 @@ rn/
 ├── model/      # Model creation and modification (for use in forward modeling or inversion)
 ├── plot/       # Matplotlib-based visualization tools
 ├── hdf5/       # HDF5 file I/O
-└── win/        # Window functions and tapering
+└── win/        # WIN format file I/O
 ```
 
 ## Usage
