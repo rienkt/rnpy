@@ -10,7 +10,6 @@ A Python library for seismic data processing and modeling.
 
 - **Signal Processing** – Fourier transforms, wavelet analysis, convolution, deconvolution, filtering, F-K (frequency-wavenumber) filtering, normal moveout (NMO) corrections, cross-correlation, and K-K domain operations
 - **Source/Receiver Management** – Active source (controlled seismic) and passive/continuous seismic station handling with spatial coordinate support
-- **Forward Modeling** – 2D synthetic model generation and checkerboard resolution test patterns
 - **Data I/O** – RSF/Madagascar format support and HDF5 storage
 - **Visualization** – Wiggle trace plots, F-K domain plots, and focal mechanism (beach ball) diagrams
 
@@ -35,7 +34,7 @@ rn/
 │   ├── continuous/   # Passive/continuous seismic monitoring
 │   └── model/        # Model construction utilities
 ├── coord/      # Coordinate system and offset calculations
-├── model/      # Model generation (checkerboard, padding, resampling)
+├── model/      # Model creation and modification (for use in forward modeling or inversion)
 ├── plot/       # Matplotlib-based visualization tools
 ├── hdf5/       # HDF5 file I/O
 └── win/        # Window functions and tapering
