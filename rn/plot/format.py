@@ -36,7 +36,9 @@ def set_dm_settings() :
    plt.rcParams.update({
     'font.size': 16,
     'font.family': 'Arial',
-    'font.weight': 'bold'
+    'font.weight': 'bold',
+    'axes.labelsize': 16,
+    'axes.labelweight': 'bold'
   })
 
 def add_text( ax, x, y, text, fontsize=12, fontweight='regular', 
@@ -55,6 +57,7 @@ def add_text( ax, x, y, text, fontsize=12, fontweight='regular',
                horizontalalignment=halign, 
                verticalalignment=valign,
                transform=ax.transAxes, 
+               wrap=True,
                rotation=rotation )
       ax_subtitle.set_position( position )
       return ax_subtitle
@@ -267,20 +270,6 @@ def create_axes( fig, widths, heights,  left,  bottom,  dwidth, dheight, dwidths
     )
 
 
-  # create empty 2d array
-  #axs=[]
-  #caxs = [ [ None for _ in range( nhor )] for _ in range( nver ) ]
-  #for iver in range( nver ) :
-  #  #for ihor in range( nhor ) :
-  #  if projection is None :
-  #    axs.append( [ fig.add_axes( [ lefts[ihor], bottoms[iver], 
-  #                                  widths[ihor], heights[iver] ] ) for ihor
-  #                in range( nhor)  ]  )
-  #  else :
-  #    axs.append( [ fig.add_axes( [ lefts[ihor], bottoms[iver], 
-  #                                  widths[ihor], heights[iver] ],
-  #                                 projection=projection) for ihor
-  #                in range( nhor)  ]  )
   return  axs, caxs
  
 
@@ -292,7 +281,7 @@ def remove_axlabels( axs,
                     yh0=None, yh1=None, yv0=None, yv1=None,
                     xaxis = True, yaxis=True, axfmt=None, xlabel_loc='top',
                     ylabel_loc = 'left',
-                    xticklabels = True, yticklabels=True) :
+                    xticklabels = True, yticklabels=True ) :
   print( axfmt )
   nv = axs.shape[0] #len( axs )
   try :
@@ -316,7 +305,7 @@ def remove_axlabels( axs,
     if xv0 is None :
       xv0 = 0
     if xv1 is None :
-      xv1 = nv -1
+      xv1 = nv -2
 
   if yh0 is None :
     yh0 = 1 
@@ -359,6 +348,19 @@ def remove_axlabels( axs,
           ax.set_yticklabels( [ ] )
         except :
           print('ax: %d %d does not exist '%( iv, ih ))
+def remove_titles( axs ) :
+  nv = axs.shape[0] #len( axs )
+  try :
+    nh = axs.shape[1] #len( axs[0] )
+  except :
+    nh = 1
+  for iv in range( 1, nv ) :
+    for ih in range( 0, nh) :
+      try :
+        ax = axs[ iv , ih ]
+        ax.set_title( '' )
+      except :
+        print('ax: %d %d does not exist '%( iv, ih ))
 def merge_axes( ax0, ax1, flag='v' ) :
   #{{{{{
   # merge two axis in certain directions
@@ -404,6 +406,9 @@ class FigFormat :
         self.height_ratios, self.left, self.right, self.bottom, self.top,
         self.dwidth, self.dheight, self.aspect , dwidths=self.dwidths, 
         dheights=self.dheights)
+  def create_fig( self, projection=None ) :
+    fig = plt.figure( figsize=self.figsize )
+    axs, caxs = self.create_axes( fig, projection=projection )
   def create_axes( self, fig, projection=None ) :
     if self.widths is None :
       self.calc_figsize_widths_heights()
@@ -436,6 +441,8 @@ class AxesFormat :
                 xticklabels_format = None, yticklabels_format=None,
                 xticklabel_pad = None, yticklabel_pad = None,
                 title=None, 
+                title_position = [ 0.5, 1.05 ], title_dir='h', title_halign='center',
+                title_valign='center', title_fontsize=None, title_fontweight='bold',
                 subtitle=None, subtitle_position=None,
                 subtitle_dir='h', 
                 subtitle_halign='center', subtitle_valign='center',
@@ -501,6 +508,14 @@ class AxesFormat :
     self.polar = polar
     
     self.title  = title
+    self.title_position = title_position
+    self.title_dir = title_dir
+    self.title_halign= title_halign
+    self.title_valign= title_valign
+    self.title_fontsize = title_fontsize
+    self.title_fontweight = title_fontweight
+
+
     self.subtitle2 = subtitle2
     self.subtitle2_position = subtitle2_position
     self.subtitle2_dir = subtitle2_dir
@@ -638,9 +653,14 @@ class AxesFormat :
               linewidth=self.grid_linewidth)
 
     if self.title :
-      ax.set_title( self.title, fontsize=self.fontsize+4,
-                    fontweight='bold' )
-
+      if self.title_fontsize is None :
+        self.title_fontsize = self.fontsize +2 
+      ax.set_title( self.title, fontsize=self.title_fontsize,
+                    fontweight=self.title_fontweight, 
+                    x=self.title_position[0], y=self.title_position[1],
+                    horizontalalignment=self.title_halign,
+                    verticalalignment=self.title_valign,
+                    )
     if self.polar == 1 :
       self.xgrid = None
       self.ygrid = None

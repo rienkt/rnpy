@@ -93,7 +93,8 @@ class rn_loc( object ) : #{{{{{
     for i in range( self.n ) :
       self.id.append( 'id-%d'%i )
       self.time.append( datetime.datetime( 1900, 1, 1, tzinfo = tz_jp ) )
-    self.id = np.asarray( self.id, dtype=np.unicode_ )
+    #self.id = np.asarray( self.id, dtype=np.unicode_ )
+    self.id = np.asarray( self.id, dtype=np.str_ )
   def extract( self, idxs ) :
     self.x = self.x[idxs]
     self.y = self.y[idxs]
@@ -204,7 +205,7 @@ class rn_offset( object ) : #{{{{{
     self.set_n( len(lines) )
 
     self.id = np.array( [ line.split()[0] for line in lines ],
-                        dtype=np.unicode_ )
+                        dtype=np.str_ )
     self.d  = np.array( [ line.split()[1] for line in lines ], 
                         dtype=float ) 
 
@@ -236,8 +237,8 @@ class rn_fbreak( object ) : #{{{{{
       ( self.srcid, self.rcvid ) = np.meshgrid( srcs.id, rcvs.id )
 
     except :
-      self.srcid = np.zeros( ( srcs.n, rcvs.n ), dtype=np.unicode_)
-      self.rcvid = np.zeros( ( srcs.n, rcvs.n ), dtype=np.unicode_)
+      self.srcid = np.zeros( ( srcs.n, rcvs.n ), dtype=np.str_)
+      self.rcvid = np.zeros( ( srcs.n, rcvs.n ), dtype=np.str_)
     
 
 

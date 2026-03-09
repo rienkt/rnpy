@@ -5,7 +5,10 @@
 
 """
 # Import RSF structure (like SEP.top)
-import rsf.api as rsf
+try :
+  import rsf.api as rsf
+except :
+  print( 'rsf is not found. please set RSF environment' )
 import os 
 import sys
 import subprocess
@@ -199,6 +202,7 @@ class FreqDomainModelSnap :
       self.freqs.read( ffreq )
       if self.freqs.n != self.nfreq :
         print( '# of frequencies differs between freq file and rsf file')
+
 
   def read( self, input_re=None, input_im=None, fre=None, fim=None,
             ffreq='freq.txt'):
