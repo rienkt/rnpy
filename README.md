@@ -19,8 +19,7 @@ Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/rienkt/rnpy.git
-cd rnpy
-pip install numpy scipy matplotlib pandas
+export PYTHONPATH=path-to-rnpy/rn:$PYTHONPATH
 ```
 
 ## Project Structure
